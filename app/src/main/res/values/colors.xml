@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <color name="accent">#2B370C</color>
+    <color name="accent_pressed">#2B370C</color>
+    <color name="on_accent">#101114</color>
+
+    <color name="background">#F4F5F7</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#EBEDF0</color>
+    <color name="divider">#DCE0E5</color>
+
+    <color name="text_primary">#101114</color>
+    <color name="text_secondary">#61666F</color>
+
+    <color name="status_new">#5C7A00</color>
+    <color name="status_in_progress">#2E7D32</color>
+    <color name="status_done">#00695C</color>
+    <color name="status_postponed">#B26A00</color>
+</resources>
