@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    // KSP генерирует код Room во время сборки.
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -12,11 +14,15 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "0.1"
+        versionName = "0.2"
 
-        // Без этой строки Android Studio не может собрать и запустить
-        // инструментальные тесты из app/src/androidTest.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Room выгружает схему базы в JSON. Это позволяет видеть изменения
+    // структуры таблиц в истории git и писать тесты миграций.
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 
     buildTypes {
@@ -32,6 +38,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Позволяет пользоваться java.time (LocalDate) начиная с Android 7.0.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -39,8 +47,8 @@ android {
     }
 
     buildFeatures {
-        // ViewBinding вместо findViewById: опечатка в идентификаторе
-        // разметки не доживает до запуска, её ловит компилятор.
+        // ViewBinding вместо findViewById: обращение к разметке проверяет
+        // компилятор, опечатка в идентификаторе не доживает до запуска.
         viewBinding = true
     }
 }
@@ -57,13 +65,27 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
-    // --- Архитектура MVVM: понадобится со 2-3 недели ---
+    // --- Архитектура MVVM ---
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // --- База данных ---
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // --- Асинхронность: работа с БД в фоновом потоке ---
+    implementation(libs.kotlinx.coroutines.android)
+
+    // --- Поддержка java.time на старых версиях Android ---
+    coreLibraryDesugaring(libs.android.desugar.jdk.libs)
 
     // --- Тесты ---
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.room.testing)
 }
