@@ -16,6 +16,7 @@
         app:navGraph="@navigation/nav_graph" />
 
     <View
+        android:id="@+id/navDivider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/divider" />

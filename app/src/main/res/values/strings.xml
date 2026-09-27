@@ -2,7 +2,50 @@
 <resources>
     <string name="app_name">Идеи</string>
 
+    <!-- Вкладки нижнего меню -->
     <string name="tab_ideas">Идеи</string>
     <string name="tab_stats">Статистика</string>
     <string name="tab_settings">Настройки</string>
+
+    <!-- Экран списка идей -->
+    <string name="ideas_title">Мои идеи</string>
+    <string name="ideas_loading">Загрузка…</string>
+    <string name="empty_ideas_title">Пока нет ни одной идеи</string>
+    <string name="empty_ideas_hint">Нажмите «+», чтобы записать первую</string>
+    <string name="action_add_idea">Добавить идею</string>
+
+    <!-- Правильное окончание: 1 идея, 2 идеи, 5 идей -->
+    <plurals name="ideas_count">
+        <item quantity="one">%d идея</item>
+        <item quantity="few">%d идеи</item>
+        <item quantity="many">%d идей</item>
+        <item quantity="other">%d идеи</item>
+    </plurals>
+
+    <!-- Статусы идеи -->
+    <string name="status_new">Новая</string>
+    <string name="status_in_progress">В работе</string>
+    <string name="status_done">Готово</string>
+    <string name="status_postponed">Отложена</string>
+
+    <!-- Экран создания и редактирования -->
+    <string name="editor_title_new">Новая идея</string>
+    <string name="editor_title_edit">Редактирование</string>
+    <string name="editor_field_title">Заголовок</string>
+    <string name="editor_field_content">Описание</string>
+    <string name="editor_field_category">Категория</string>
+    <string name="editor_field_status">Статус</string>
+    <string name="editor_field_rating">Важность</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_cancel">Отмена</string>
+
+    <!-- Сообщения об ошибках -->
+    <string name="error_title_required">Введите заголовок идеи</string>
+    <string name="error_save_failed">Не удалось сохранить: %1$s</string>
+
+    <!-- Экраны-заглушки -->
+    <string name="stats_title">Статистика</string>
+    <string name="stats_hint">Графики появятся на неделе 9</string>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_hint">Настройки появятся на неделе 10</string>
 </resources>

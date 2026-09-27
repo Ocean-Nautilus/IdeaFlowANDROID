@@ -9,16 +9,41 @@
         android:id="@+id/ideasFragment"
         android:name="com.nautilus.ideas.ui.ideas.IdeasFragment"
         android:label="@string/tab_ideas"
-        tools:layout="@layout/fragment_ideas" />
+        tools:layout="@layout/fragment_ideas">
+
+        <!-- Переход к форме. Без аргумента открывается пустая форма,
+             с ideaId - заполненная данными существующей идеи. -->
+        <action
+            android:id="@+id/action_ideas_to_editor"
+            app:destination="@id/ideaEditorFragment" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/statsFragment"
         android:name="com.nautilus.ideas.ui.stats.StatsFragment"
-        android:label="@string/tab_stats" />
+        android:label="@string/tab_stats"
+        tools:layout="@layout/fragment_stats" />
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.nautilus.ideas.ui.settings.SettingsFragment"
-        android:label="@string/tab_settings" />
+        android:label="@string/tab_settings"
+        tools:layout="@layout/fragment_settings" />
+
+    <!-- Экран формы. Не вкладка нижнего меню: открывается поверх
+         списка, поэтому меню на нём скрывается. -->
+    <fragment
+        android:id="@+id/ideaEditorFragment"
+        android:name="com.nautilus.ideas.ui.editor.IdeaEditorFragment"
+        android:label="@string/editor_title_new"
+        tools:layout="@layout/fragment_idea_editor">
+
+        <argument
+            android:name="ideaId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+
+    </fragment>
 
 </navigation>
