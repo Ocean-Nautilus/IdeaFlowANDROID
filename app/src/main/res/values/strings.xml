@@ -39,9 +39,26 @@
     <string name="action_save">Сохранить</string>
     <string name="action_cancel">Отмена</string>
 
+    <!-- Экран детального просмотра -->
+    <string name="details_title">Идея</string>
+    <string name="details_no_content">Описание не заполнено</string>
+    <string name="details_tags">Теги</string>
+    <string name="details_tag">#%1$s</string>
+    <string name="details_rating_value">Важность %1$d из 5</string>
+    <string name="details_created">Создана %1$s</string>
+    <string name="details_updated">Изменена %1$s</string>
+    <string name="action_back">Назад</string>
+    <string name="action_edit">Редактировать</string>
+    <string name="action_delete">Удалить</string>
+
+    <!-- Диалог подтверждения удаления -->
+    <string name="delete_dialog_title">Удалить идею?</string>
+    <string name="delete_dialog_message">«%1$s» будет удалена безвозвратно.</string>
+
     <!-- Сообщения об ошибках -->
     <string name="error_title_required">Введите заголовок идеи</string>
     <string name="error_save_failed">Не удалось сохранить: %1$s</string>
+    <string name="error_delete_failed">Не удалось удалить: %1$s</string>
 
     <!-- Экраны-заглушки -->
     <string name="stats_title">Статистика</string>

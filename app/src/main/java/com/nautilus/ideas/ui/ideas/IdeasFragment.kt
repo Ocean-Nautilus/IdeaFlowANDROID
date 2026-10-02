@@ -13,7 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nautilus.ideas.R
-import com.nautilus.ideas.ui.editor.IdeaEditorFragment
+import com.nautilus.ideas.ui.details.IdeaDetailsFragment
 import com.nautilus.ideas.databinding.FragmentIdeasBinding
 import com.nautilus.ideas.ui.adapters.IdeaAdapter
 import com.nautilus.ideas.viewmodels.IdeasUiState
@@ -57,9 +57,10 @@ class IdeasFragment : Fragment() {
 
     private fun setUpList() {
         adapter = IdeaAdapter(onIdeaClick = { item ->
-            // TODO(неделя 5): здесь появится экран детального просмотра,
-            // а правка будет открываться уже из него.
-            openEditor(item.idea.id)
+            findNavController().navigate(
+                R.id.action_ideas_to_details,
+                bundleOf(IdeaDetailsFragment.ARG_IDEA_ID to item.idea.id)
+            )
         })
 
         binding.ideasList.layoutManager = LinearLayoutManager(requireContext())
@@ -73,7 +74,7 @@ class IdeasFragment : Fragment() {
     private fun setUpButtons() {
         binding.addIdeaButton.setOnClickListener {
             // Без аргумента форма открывается пустой - создаём новую идею.
-            openEditor(null)
+            findNavController().navigate(R.id.action_ideas_to_editor)
         }
     }
 
@@ -109,14 +110,6 @@ class IdeasFragment : Fragment() {
         }
 
         adapter.submitList(state.ideas)
-    }
-
-    /**
-     * Открывает форму. null - создание новой идеи, id - правка существующей.
-     */
-    private fun openEditor(ideaId: Long?) {
-        val args = ideaId?.let { bundleOf(IdeaEditorFragment.ARG_IDEA_ID to it) }
-        findNavController().navigate(R.id.action_ideas_to_editor, args)
     }
 
     override fun onDestroyView() {
