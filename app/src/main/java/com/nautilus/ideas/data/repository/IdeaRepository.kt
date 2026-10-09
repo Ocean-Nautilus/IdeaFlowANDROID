@@ -29,6 +29,8 @@ class IdeaRepository(
 
     fun observeIdeas(): Flow<List<IdeaWithDetails>> = ideaDao.observeAll()
 
+    fun observeIdeas(query: String): Flow<List<IdeaWithDetails>> =
+        if (query.isBlank()) ideaDao.observeAll() else ideaDao.search(query)
     fun observeIdea(ideaId: Long): Flow<IdeaWithDetails?> = ideaDao.observeById(ideaId)
 
     fun observeIdeaCount(): Flow<Int> = ideaDao.observeCount()

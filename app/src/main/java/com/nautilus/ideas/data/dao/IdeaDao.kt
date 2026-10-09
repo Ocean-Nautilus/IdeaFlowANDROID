@@ -25,6 +25,15 @@ interface IdeaDao {
     @Query("SELECT * FROM ideas ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<IdeaWithDetails>>
 
+    @Query(
+        """
+    SELECT * FROM ideas
+    WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%'
+    ORDER BY createdAt DESC
+    """
+    )
+    fun search(query: String): Flow<List<IdeaWithDetails>>
+
     @Transaction
     @Query("SELECT * FROM ideas WHERE id = :ideaId")
     fun observeById(ideaId: Long): Flow<IdeaWithDetails?>

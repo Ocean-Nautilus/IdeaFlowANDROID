@@ -60,9 +60,12 @@
     <string name="error_save_failed">Не удалось сохранить: %1$s</string>
     <string name="error_delete_failed">Не удалось удалить: %1$s</string>
 
+    <string name="ideas_search_hint">Найти идею…</string>
+    <string name="empty_search_title">Ничего не нашлось</string>
+
     <!-- Экраны-заглушки -->
     <string name="stats_title">Статистика</string>
-    <string name="stats_hint">Графики появятся на неделе 9</string>
+    <string name="stats_hint">Графики</string>
     <string name="settings_title">Настройки</string>
-    <string name="settings_hint">Настройки появятся на неделе 10</string>
+    <string name="settings_hint">Настройки</string>
 </resources>

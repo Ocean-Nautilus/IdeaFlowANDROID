@@ -19,6 +19,7 @@ import com.nautilus.ideas.ui.adapters.IdeaAdapter
 import com.nautilus.ideas.viewmodels.IdeasUiState
 import com.nautilus.ideas.viewmodels.IdeasViewModel
 import kotlinx.coroutines.launch
+import androidx.core.widget.doAfterTextChanged
 
 /**
  * Главный экран: список всех идей пользователя.
@@ -51,6 +52,7 @@ class IdeasFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setUpList()
+        setUpSearch()
         setUpButtons()
         observeUiState()
     }
@@ -69,6 +71,12 @@ class IdeasFragment : Fragment() {
         // Размер карточки не зависит от содержимого списка, поэтому
         // RecyclerView может не пересчитывать свои размеры на каждой вставке.
         binding.ideasList.setHasFixedSize(true)
+    }
+
+    private fun setUpSearch() {
+        binding.searchInput.doAfterTextChanged { text ->
+            viewModel.onQueryChanged(text?.toString().orEmpty())
+        }
     }
 
     private fun setUpButtons() {
@@ -96,6 +104,9 @@ class IdeasFragment : Fragment() {
     private fun render(state: IdeasUiState) = with(binding) {
         progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
         emptyState.visibility = if (state.isEmpty) View.VISIBLE else View.GONE
+        emptyTitleText.setText(
+            if (state.isEmptyFromSearch) R.string.empty_search_title else R.string.empty_ideas_title
+        )
         ideasList.visibility = if (state.ideas.isEmpty()) View.GONE else View.VISIBLE
 
         subtitleText.text = if (state.isLoading) {

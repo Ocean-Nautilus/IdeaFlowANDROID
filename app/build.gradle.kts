@@ -79,6 +79,9 @@ dependencies {
     // --- Асинхронность: работа с БД в фоновом потоке ---
     implementation(libs.kotlinx.coroutines.android)
 
+    // --- Графики для экрана статистики ---
+    implementation(libs.mpandroidchart)
+
     // --- Поддержка java.time на старых версиях Android ---
     coreLibraryDesugaring(libs.android.desugar.jdk.libs)
 
