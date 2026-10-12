@@ -20,6 +20,13 @@ import com.nautilus.ideas.viewmodels.IdeasUiState
 import com.nautilus.ideas.viewmodels.IdeasViewModel
 import kotlinx.coroutines.launch
 import androidx.core.widget.doAfterTextChanged
+import android.widget.ArrayAdapter
+import android.widget.PopupMenu
+import com.google.android.material.chip.Chip
+import com.nautilus.ideas.data.model.Category
+import com.nautilus.ideas.data.model.IdeaStatus
+import com.nautilus.ideas.data.model.SortOption
+import com.nautilus.ideas.utils.IdeaStatusUi
 
 /**
  * Главный экран: список всех идей пользователя.
@@ -53,6 +60,8 @@ class IdeasFragment : Fragment() {
 
         setUpList()
         setUpSearch()
+        setUpStatusFilter()
+        setUpSort()
         setUpButtons()
         observeUiState()
     }
@@ -76,6 +85,64 @@ class IdeasFragment : Fragment() {
     private fun setUpSearch() {
         binding.searchInput.doAfterTextChanged { text ->
             viewModel.onQueryChanged(text?.toString().orEmpty())
+        }
+    }
+
+    private var lastCategoriesShown: List<Category> = emptyList()
+
+    private fun setUpStatusFilter() {
+        IdeaStatus.entries.forEach { status ->
+            val chip = Chip(requireContext()).apply {
+                id = View.generateViewId()
+                text = getString(IdeaStatusUi.labelOf(status))
+                isCheckable = true
+                tag = status
+            }
+            binding.statusFilterChips.addView(chip)
+        }
+
+        binding.statusFilterChips.setOnCheckedStateChangeListener { group, checkedIds ->
+            val chip = checkedIds.firstOrNull()?.let { group.findViewById<Chip>(it) }
+            val status = chip?.tag as? IdeaStatus
+            // Снятие "Все" при выборе конкретного статуса и наоборот.
+            viewModel.onStatusFilterChanged(if (chip?.id == binding.chipStatusAll.id) null else status)
+        }
+    }
+
+    private fun setUpCategoryFilter(categories: List<Category>, selected: Category?) {
+        if (categories != lastCategoriesShown) {
+            lastCategoriesShown = categories
+            val labels = listOf(getString(R.string.filter_category_all)) + categories.map { it.name }
+            binding.categoryFilterInput.setAdapter(
+                ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, labels)
+            )
+            binding.categoryFilterInput.setOnItemClickListener { _, _, position, _ ->
+                viewModel.onCategoryFilterChanged(categories.getOrNull(position - 1))
+            }
+        }
+        val text = selected?.name ?: getString(R.string.filter_category_all)
+        if (binding.categoryFilterInput.text?.toString() != text) {
+            binding.categoryFilterInput.setText(text, false)
+        }
+    }
+
+    private fun setUpSort() {
+        val options = listOf(
+            SortOption.DATE_DESC to R.string.sort_date_desc,
+            SortOption.DATE_ASC to R.string.sort_date_asc,
+            SortOption.TITLE_ASC to R.string.sort_title_asc,
+            SortOption.RATING_DESC to R.string.sort_rating_desc
+        )
+        binding.sortButton.setOnClickListener { anchor ->
+            val popup = PopupMenu(requireContext(), anchor)
+            options.forEachIndexed { index, (_, labelRes) ->
+                popup.menu.add(0, index, index, labelRes)
+            }
+            popup.setOnMenuItemClickListener { item ->
+                viewModel.onSortChanged(options[item.itemId].first)
+                true
+            }
+            popup.show()
         }
     }
 
@@ -105,7 +172,7 @@ class IdeasFragment : Fragment() {
         progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
         emptyState.visibility = if (state.isEmpty) View.VISIBLE else View.GONE
         emptyTitleText.setText(
-            if (state.isEmptyFromSearch) R.string.empty_search_title else R.string.empty_ideas_title
+            if (state.isEmptyFromFilters) R.string.empty_search_title else R.string.empty_ideas_title
         )
         ideasList.visibility = if (state.ideas.isEmpty()) View.GONE else View.VISIBLE
 
@@ -119,6 +186,7 @@ class IdeasFragment : Fragment() {
                 state.ideas.size
             )
         }
+        setUpCategoryFilter(state.categories, state.categoryFilter)
 
         adapter.submitList(state.ideas)
     }

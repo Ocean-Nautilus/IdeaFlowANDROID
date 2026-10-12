@@ -5,6 +5,9 @@ import com.nautilus.ideas.data.dao.IdeaDao
 import com.nautilus.ideas.data.dao.TagDao
 import com.nautilus.ideas.data.db.AppDatabase
 import com.nautilus.ideas.data.model.Category
+import com.nautilus.ideas.data.model.IdeaStatus
+import com.nautilus.ideas.data.model.SortOption
+import com.nautilus.ideas.data.model.CategoryCount
 import com.nautilus.ideas.data.model.Idea
 import com.nautilus.ideas.data.model.IdeaTagCrossRef
 import com.nautilus.ideas.data.model.IdeaWithDetails
@@ -25,12 +28,21 @@ class IdeaRepository(
     private val tagDao: TagDao
 ) {
 
-    // --- чтение ---
-
     fun observeIdeas(): Flow<List<IdeaWithDetails>> = ideaDao.observeAll()
 
-    fun observeIdeas(query: String): Flow<List<IdeaWithDetails>> =
-        if (query.isBlank()) ideaDao.observeAll() else ideaDao.search(query)
+    fun observeIdeas(
+        query: String = "",
+        status: IdeaStatus? = null,
+        categoryId: Long? = null,
+        sort: SortOption = SortOption.DATE_DESC
+    ): Flow<List<IdeaWithDetails>> = ideaDao.observeFiltered(
+        query = query,
+        status = status?.name,
+        categoryId = categoryId,
+        sort = sort.name
+    )
+
+    fun observeCountByCategory(): Flow<List<CategoryCount>> = categoryDao.observeCountByCategory()
     fun observeIdea(ideaId: Long): Flow<IdeaWithDetails?> = ideaDao.observeById(ideaId)
 
     fun observeIdeaCount(): Flow<Int> = ideaDao.observeCount()

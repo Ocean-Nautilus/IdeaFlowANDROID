@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    implementation("androidx.cardview:cardview:1.0.0")
+
     // --- База данных ---
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
@@ -84,6 +86,7 @@ dependencies {
 
     // --- Поддержка java.time на старых версиях Android ---
     coreLibraryDesugaring(libs.android.desugar.jdk.libs)
+
 
     // --- Тесты ---
     testImplementation(libs.junit)

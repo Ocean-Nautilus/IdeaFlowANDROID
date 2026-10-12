@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.nautilus.ideas.data.model.CategoryCount
 import com.nautilus.ideas.data.model.Category
 import kotlinx.coroutines.flow.Flow
 
@@ -19,6 +20,17 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface CategoryDao {
+
+    @Query(
+        """
+    SELECT c.id AS categoryId, c.name AS categoryName, c.colorHex AS colorHex, COUNT(i.id) AS amount
+    FROM categories AS c
+    LEFT JOIN ideas AS i ON i.categoryId = c.id
+    GROUP BY c.id
+    ORDER BY c.name
+    """
+    )
+    fun observeCountByCategory(): Flow<List<CategoryCount>>
 
     @Query("SELECT * FROM categories ORDER BY name")
     fun observeAll(): Flow<List<Category>>

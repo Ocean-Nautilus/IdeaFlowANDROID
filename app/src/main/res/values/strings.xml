@@ -63,9 +63,26 @@
     <string name="ideas_search_hint">Найти идею…</string>
     <string name="empty_search_title">Ничего не нашлось</string>
 
+    <string name="filter_all">Все</string>
+    <string name="filter_category_hint">Категория</string>
+    <string name="filter_category_all">Все категории</string>
+    <string name="action_sort">Сортировка</string>
+    <string name="sort_date_desc">Сначала новые</string>
+    <string name="sort_date_asc">Сначала старые</string>
+    <string name="sort_title_asc">По названию</string>
+    <string name="sort_rating_desc">По важности</string>
+
+    <string name="stats_subtitle">Твоя активность</string>
+    <string name="stats_by_category">Идеи по категориям</string>
+    <string name="stats_by_status">Идеи по статусам</string>
+    <string name="stats_empty">Пока нет данных — добавь первую идею</string>
+
+
     <!-- Экраны-заглушки -->
     <string name="stats_title">Статистика</string>
     <string name="stats_hint">Графики</string>
     <string name="settings_title">Настройки</string>
     <string name="settings_hint">Настройки</string>
+
+
 </resources>
