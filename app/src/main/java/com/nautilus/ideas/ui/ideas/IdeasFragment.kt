@@ -27,6 +27,7 @@ import com.nautilus.ideas.data.model.Category
 import com.nautilus.ideas.data.model.IdeaStatus
 import com.nautilus.ideas.data.model.SortOption
 import com.nautilus.ideas.utils.IdeaStatusUi
+import com.nautilus.ideas.utils.IdeaCountFormatter
 
 /**
  * Главный экран: список всех идей пользователя.
@@ -58,6 +59,7 @@ class IdeasFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        isBinding = true
         setUpList()
         setUpSearch()
         setUpStatusFilter()
@@ -83,12 +85,14 @@ class IdeasFragment : Fragment() {
     }
 
     private fun setUpSearch() {
+        binding.searchInput.setText(viewModel.uiState.value.query)
         binding.searchInput.doAfterTextChanged { text ->
             viewModel.onQueryChanged(text?.toString().orEmpty())
         }
     }
 
-    private var lastCategoriesShown: List<Category> = emptyList()
+    private var lastCategoriesShown: List<Category>? = null
+    private var isBinding = false
 
     private fun setUpStatusFilter() {
         IdeaStatus.entries.forEach { status ->
@@ -102,6 +106,7 @@ class IdeasFragment : Fragment() {
         }
 
         binding.statusFilterChips.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (isBinding) return@setOnCheckedStateChangeListener
             val chip = checkedIds.firstOrNull()?.let { group.findViewById<Chip>(it) }
             val status = chip?.tag as? IdeaStatus
             // Снятие "Все" при выборе конкретного статуса и наоборот.
@@ -174,18 +179,23 @@ class IdeasFragment : Fragment() {
         emptyTitleText.setText(
             if (state.isEmptyFromFilters) R.string.empty_search_title else R.string.empty_ideas_title
         )
+        emptyHintText.setText(
+            if (state.isEmptyFromFilters) R.string.empty_search_hint else R.string.empty_ideas_hint
+        )
         ideasList.visibility = if (state.ideas.isEmpty()) View.GONE else View.VISIBLE
 
         subtitleText.text = if (state.isLoading) {
             getString(R.string.ideas_loading)
         } else {
-            // Правильное окончание: 1 идея, 2 идеи, 5 идей.
-            resources.getQuantityString(
-                R.plurals.ideas_count,
-                state.ideas.size,
-                state.ideas.size
-            )
+            IdeaCountFormatter.format(requireContext(), state.ideas.size)
         }
+        isBinding = true
+        for (index in 0 until statusFilterChips.childCount) {
+            val chip = statusFilterChips.getChildAt(index) as Chip
+            chip.isChecked = if (chip.id == chipStatusAll.id) state.statusFilter == null
+                else chip.tag == state.statusFilter
+        }
+        isBinding = false
         setUpCategoryFilter(state.categories, state.categoryFilter)
 
         adapter.submitList(state.ideas)
@@ -196,6 +206,7 @@ class IdeasFragment : Fragment() {
         // Адаптер отвязываем явно: RecyclerView держит на него ссылку,
         // а тот — на ViewHolder-ы с View уничтоженного экрана.
         binding.ideasList.adapter = null
+        lastCategoriesShown = null
         _binding = null
     }
 }

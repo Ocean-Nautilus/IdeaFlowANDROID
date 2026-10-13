@@ -70,7 +70,12 @@ class IdeaRepository(
         val ideaId = if (idea.id == 0L) {
             ideaDao.insert(idea)
         } else {
-            ideaDao.update(idea.copy(updatedAt = System.currentTimeMillis()))
+            val original = requireNotNull(ideaDao.getById(idea.id)) { "Идея больше не существует" }.idea
+            ideaDao.update(idea.copy(
+                createdAt = original.createdAt,
+                isVoiceNote = original.isVoiceNote,
+                updatedAt = System.currentTimeMillis()
+            ))
             idea.id
         }
 

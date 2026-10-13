@@ -62,6 +62,7 @@
 
     <string name="ideas_search_hint">Найти идею…</string>
     <string name="empty_search_title">Ничего не нашлось</string>
+    <string name="empty_search_hint">Измените поисковый запрос или фильтры</string>
 
     <string name="filter_all">Все</string>
     <string name="filter_category_hint">Категория</string>

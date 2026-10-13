@@ -8,6 +8,7 @@ import com.nautilus.ideas.data.model.Category
 import com.nautilus.ideas.data.model.Idea
 import com.nautilus.ideas.data.model.IdeaTagCrossRef
 import com.nautilus.ideas.data.model.Tag
+import com.nautilus.ideas.data.repository.IdeaRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -87,5 +88,31 @@ class DatabaseTest {
         database.tagDao().linkTagToIdea(IdeaTagCrossRef(ideaId, tagId))
 
         assertTrue(database.tagDao().getTagsOfIdea(ideaId).size == 1)
+    }
+
+    @Test
+    fun editingPreservesCreationTimeVoiceFlagAndTags() = runBlocking {
+        val categoryId = database.categoryDao()
+            .insert(Category(name = "Тест", colorHex = "#D2F84B"))
+        val repository = IdeaRepository.from(database)
+        val id = repository.saveIdea(
+            Idea(title = "До", content = "", categoryId = categoryId,
+                createdAt = 123L, isVoiceNote = true),
+            listOf("проект")
+        )
+
+        repository.saveIdea(
+            Idea(id = id, title = "После", content = "Новый текст", categoryId = categoryId),
+            listOf("проект")
+        )
+
+        val saved = requireNotNull(repository.getIdea(id))
+        assertEquals(123L, saved.idea.createdAt)
+        assertTrue(saved.idea.isVoiceNote)
+        assertTrue(saved.idea.updatedAt > saved.idea.createdAt)
+        assertEquals("После", saved.idea.title)
+        assertEquals("Новый текст", saved.idea.content)
+        assertEquals(listOf("проект"), saved.tags.map { it.name })
+        assertEquals(1, database.ideaDao().observeCount().first())
     }
 }
