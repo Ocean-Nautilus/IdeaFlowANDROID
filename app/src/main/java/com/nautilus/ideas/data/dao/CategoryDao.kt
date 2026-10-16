@@ -21,6 +21,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CategoryDao {
 
+    @Query("SELECT * FROM categories ORDER BY name")
+    suspend fun getAll(): List<Category>
+
     @Query(
         """
     SELECT c.id AS categoryId, c.name AS categoryName, c.colorHex AS colorHex, COUNT(i.id) AS amount

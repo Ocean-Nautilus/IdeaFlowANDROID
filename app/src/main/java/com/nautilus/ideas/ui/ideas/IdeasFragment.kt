@@ -13,6 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nautilus.ideas.R
+import com.nautilus.ideas.IdeasApp
 import com.nautilus.ideas.ui.details.IdeaDetailsFragment
 import com.nautilus.ideas.databinding.FragmentIdeasBinding
 import com.nautilus.ideas.ui.adapters.IdeaAdapter
@@ -75,6 +76,7 @@ class IdeasFragment : Fragment() {
                 bundleOf(IdeaDetailsFragment.ARG_IDEA_ID to item.idea.id)
             )
         })
+        adapter.showDescriptions = (requireActivity().application as IdeasApp).settings.showDescriptions
 
         binding.ideasList.layoutManager = LinearLayoutManager(requireContext())
         binding.ideasList.adapter = adapter
@@ -92,6 +94,12 @@ class IdeasFragment : Fragment() {
     }
 
     private var lastCategoriesShown: List<Category>? = null
+
+    override fun onResume() {
+        super.onResume()
+        val settings = (requireActivity().application as IdeasApp).settings
+        adapter.showDescriptions = settings.showDescriptions
+    }
     private var isBinding = false
 
     private fun setUpStatusFilter() {

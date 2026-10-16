@@ -28,6 +28,13 @@ class IdeaAdapter(
     private val onIdeaClick: (IdeaWithDetails) -> Unit
 ) : ListAdapter<IdeaWithDetails, IdeaAdapter.IdeaViewHolder>(DIFF) {
 
+    var showDescriptions: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyItemRangeChanged(0, itemCount)
+        }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IdeaViewHolder {
         val binding = ItemIdeaBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -79,7 +86,7 @@ class IdeaAdapter(
 
             // Описание может быть пустым — тогда строку под заголовком прячем,
             // иначе карточка получит пустой отступ непонятного назначения.
-            contentText.visibility = if (item.idea.content.isBlank()) {
+            contentText.visibility = if (!showDescriptions || item.idea.content.isBlank()) {
                 android.view.View.GONE
             } else {
                 android.view.View.VISIBLE

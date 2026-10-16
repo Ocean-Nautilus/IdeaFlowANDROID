@@ -19,6 +19,9 @@ import kotlinx.coroutines.flow.Flow
 interface TagDao {
 
     @Query("SELECT * FROM tags ORDER BY name")
+    suspend fun getAll(): List<Tag>
+
+    @Query("SELECT * FROM tags ORDER BY name")
     fun observeAll(): Flow<List<Tag>>
 
     @Query("SELECT id FROM tags WHERE name = :name LIMIT 1")

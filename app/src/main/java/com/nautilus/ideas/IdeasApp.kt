@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import com.nautilus.ideas.data.db.AppDatabase
 import com.nautilus.ideas.data.repository.IdeaRepository
+import com.nautilus.ideas.data.AppSettings
 
 /**
  * Класс приложения. Создаётся один раз при запуске, до любой Activity.
@@ -20,12 +21,11 @@ class IdeasApp : Application() {
     val database: AppDatabase by lazy { AppDatabase.getInstance(this) }
 
     val repository: IdeaRepository by lazy { IdeaRepository.from(database) }
+    val settings: AppSettings by lazy { AppSettings(getSharedPreferences("settings", MODE_PRIVATE)) }
 
     override fun onCreate() {
         super.onCreate()
 
-        // Тёмная тема по умолчанию - как на макетах.
-        // Неделя 10 заменит это значение на сохранённое в настройках.
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        AppCompatDelegate.setDefaultNightMode(settings.themeMode)
     }
 }

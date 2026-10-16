@@ -23,6 +23,10 @@ interface IdeaDao {
 
     @Transaction
     @Query("SELECT * FROM ideas ORDER BY createdAt DESC")
+    suspend fun getAll(): List<IdeaWithDetails>
+
+    @Transaction
+    @Query("SELECT * FROM ideas ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<IdeaWithDetails>>
 
     @Transaction
