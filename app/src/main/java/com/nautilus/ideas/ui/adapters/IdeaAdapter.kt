@@ -69,6 +69,7 @@ class IdeaAdapter(
             val context = root.context
 
             titleText.text = item.idea.title
+            voiceIcon.visibility = if (item.idea.isVoiceNote) android.view.View.VISIBLE else android.view.View.GONE
             contentText.text = item.idea.content
             categoryText.text = item.category.name
             dateText.text = DateFormatter.formatShort(item.idea.createdAt)

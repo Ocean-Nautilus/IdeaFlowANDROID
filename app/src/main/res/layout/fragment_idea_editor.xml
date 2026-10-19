@@ -93,6 +93,15 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/voiceInputButton"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/voice_input"
+                app:icon="@drawable/ic_mic" />
+
             <!-- Категория: выпадающий список -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/categoryLayout"

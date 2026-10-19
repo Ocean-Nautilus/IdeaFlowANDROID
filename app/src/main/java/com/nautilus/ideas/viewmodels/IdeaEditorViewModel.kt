@@ -32,6 +32,7 @@ data class EditorUiState(
     /** Теги существующей идеи. Экран их пока не правит (неделя 7),
      *  но обязан сохранить, иначе при редактировании они пропадут. */
     val tagNames: List<String> = emptyList(),
+    val isVoiceNote: Boolean = false,
     val isSaving: Boolean = false
 )
 
@@ -90,7 +91,8 @@ class IdeaEditorViewModel(
                     .coerceAtLeast(0),
                 status = existing?.idea?.status ?: IdeaStatus.NEW,
                 rating = existing?.idea?.rating ?: 0,
-                tagNames = existing?.tags?.map { it.name }.orEmpty()
+                tagNames = existing?.tags?.map { it.name }.orEmpty(),
+                isVoiceNote = existing?.idea?.isVoiceNote ?: false
             )
         }
     }
@@ -103,6 +105,16 @@ class IdeaEditorViewModel(
 
     fun onContentChanged(value: String) {
         _uiState.value = _uiState.value.copy(content = value)
+    }
+
+    fun onVoiceRecognized(value: String) {
+        val text = value.trim()
+        val state = _uiState.value
+        if (text.isEmpty() || state.isLoading || state.isSaving) return
+        _uiState.value = state.copy(
+            content = if (state.content.isBlank()) text else state.content + "\n" + text,
+            isVoiceNote = true
+        )
     }
 
     fun onCategorySelected(index: Int) {
@@ -146,7 +158,8 @@ class IdeaEditorViewModel(
                         content = state.content.trim(),
                         categoryId = category.id,
                         status = state.status,
-                        rating = state.rating
+                        rating = state.rating,
+                        isVoiceNote = state.isVoiceNote
                     ),
                     tagNames = state.tagNames
                 )

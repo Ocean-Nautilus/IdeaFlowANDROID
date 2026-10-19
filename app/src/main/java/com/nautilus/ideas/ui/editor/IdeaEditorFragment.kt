@@ -1,6 +1,11 @@
 package com.nautilus.ideas.ui.editor
 
 import android.os.Bundle
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.speech.RecognizerIntent
+import androidx.activity.result.contract.ActivityResultContracts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,6 +52,18 @@ class IdeaEditorFragment : Fragment() {
      * как ввод пользователя и затрёт состояние.
      */
     private var isBinding = false
+
+    private val voiceInput = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val text = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                ?.firstOrNull { it.isNotBlank() }
+            if (text == null) {
+                _binding?.let { showMessage(getString(R.string.voice_empty)) }
+            } else {
+                viewModel.onVoiceRecognized(text)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,6 +129,20 @@ class IdeaEditorFragment : Fragment() {
     }
 
     private fun setUpButtons() {
+        binding.voiceInputButton.setOnClickListener {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
+                putExtra(RecognizerIntent.EXTRA_PROMPT, getString(R.string.voice_prompt))
+            }
+            try {
+                voiceInput.launch(intent)
+            } catch (_: ActivityNotFoundException) {
+                showMessage(getString(R.string.voice_unavailable))
+            } catch (_: SecurityException) {
+                showMessage(getString(R.string.voice_unavailable))
+            }
+        }
         binding.saveButton.setOnClickListener { viewModel.save() }
         binding.cancelButton.setOnClickListener { findNavController().navigateUp() }
         binding.closeButton.setOnClickListener { findNavController().navigateUp() }
@@ -130,6 +161,7 @@ class IdeaEditorFragment : Fragment() {
             if (state.isNew) R.string.editor_title_new else R.string.editor_title_edit
         )
         saveButton.isEnabled = !state.isSaving
+        voiceInputButton.isEnabled = !state.isLoading && !state.isSaving
         savingProgress.visibility = if (state.isSaving) View.VISIBLE else View.GONE
 
         if (state.isLoading) return@with

@@ -109,4 +109,9 @@
     <string name="backup_invalid_file">Файл повреждён или имеет неверный формат IdeaFlow</string>
 
 
+    <string name="voice_input">Надиктовать описание</string>
+    <string name="voice_note">Идея надиктована голосом</string>
+    <string name="voice_prompt">Расскажите свою идею</string>
+    <string name="voice_empty">Речь не распознана. Попробуйте ещё раз.</string>
+    <string name="voice_unavailable">Голосовой ввод недоступен. Установите или включите приложение распознавания речи.</string>
 </resources>

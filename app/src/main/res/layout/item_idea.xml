@@ -37,6 +37,16 @@
                 android:textStyle="bold"
                 tools:text="Курсовая по мобильной разработке" />
 
+            <ImageView
+                android:id="@+id/voiceIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_mic"
+                android:contentDescription="@string/voice_note"
+                android:visibility="gone"
+                app:tint="@color/accent" />
+
             <LinearLayout
                 android:id="@+id/importanceLamps"
                 android:layout_width="wrap_content"

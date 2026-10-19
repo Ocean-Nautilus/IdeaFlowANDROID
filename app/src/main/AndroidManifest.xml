@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Для голосового ввода описания идеи (изюминка, неделя 11). -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
     <application
         android:name=".IdeasApp"
         android:allowBackup="true"

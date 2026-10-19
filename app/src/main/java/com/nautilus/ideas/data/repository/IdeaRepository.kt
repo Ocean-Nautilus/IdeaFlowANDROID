@@ -73,7 +73,7 @@ class IdeaRepository(
             val original = requireNotNull(ideaDao.getById(idea.id)) { "Идея больше не существует" }.idea
             ideaDao.update(idea.copy(
                 createdAt = original.createdAt,
-                isVoiceNote = original.isVoiceNote,
+                isVoiceNote = original.isVoiceNote || idea.isVoiceNote,
                 updatedAt = System.currentTimeMillis()
             ))
             idea.id
