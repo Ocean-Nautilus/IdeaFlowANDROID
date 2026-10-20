@@ -71,7 +71,6 @@
     <string name="sort_title_asc">По названию</string>
     <string name="sort_rating_desc">По важности</string>
 
-    <string name="stats_subtitle">Твоя активность</string>
     <string name="stats_by_category">Идеи по категориям</string>
     <string name="stats_by_status">Идеи по статусам</string>
     <string name="stats_empty">Пока нет данных — добавь первую идею</string>
@@ -82,20 +81,17 @@
     <string name="stats_hint">Графики</string>
     <string name="settings_title">Настройки</string>
     <string name="settings_hint">Настройки</string>
-    <string name="settings_subtitle">Настройте приложение под себя</string>
     <string name="settings_appearance">Оформление</string>
     <string name="settings_theme">Тема приложения</string>
     <string name="theme_dark">Тёмная</string>
     <string name="theme_light">Светлая</string>
     <string name="settings_list">Список идей</string>
     <string name="settings_show_descriptions">Показывать описания</string>
-    <string name="settings_descriptions_hint">Короткий текст под названием идеи в списке</string>
     <string-array name="theme_options">
         <item>@string/theme_dark</item>
         <item>@string/theme_light</item>
     </string-array>
     <string name="settings_backup">Перенос данных</string>
-    <string name="settings_backup_hint">Идеи и категории в JSON-файле до 10 МБ. Импорт добавляет данные, сохраняя существующие записи. Полные совпадения пропускаются.</string>
     <string name="backup_export">Экспортировать данные</string>
     <string name="backup_import">Импортировать данные</string>
     <string name="backup_exported">Данные экспортированы</string>

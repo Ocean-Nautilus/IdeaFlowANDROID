@@ -14,11 +14,6 @@
 
         <TextView
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:text="@string/settings_subtitle"
-            android:textColor="@color/text_secondary" android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="28dp" android:text="@string/settings_appearance"
             android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold" />
 
@@ -41,11 +36,6 @@
             android:layout_height="wrap_content" android:minHeight="48dp" android:layout_marginTop="20dp"
             android:text="@string/settings_show_descriptions" android:textColor="@color/text_primary" />
 
-        <TextView
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/settings_descriptions_hint"
-            android:textColor="@color/text_secondary" android:textSize="13sp" />
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/categoriesButton" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:layout_marginTop="20dp"
@@ -55,11 +45,6 @@
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="28dp" android:text="@string/settings_backup"
             android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" android:text="@string/settings_backup_hint"
-            android:textColor="@color/text_secondary" android:textSize="13sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/exportButton" android:layout_width="match_parent"
