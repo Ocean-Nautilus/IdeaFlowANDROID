@@ -10,9 +10,10 @@ import com.nautilus.ideas.data.model.Category
 import com.nautilus.ideas.data.model.Idea
 import com.nautilus.ideas.data.model.IdeaStatus
 import com.nautilus.ideas.data.repository.IdeaRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -29,8 +30,7 @@ data class EditorUiState(
     val selectedCategoryIndex: Int = 0,
     val status: IdeaStatus = IdeaStatus.NEW,
     val rating: Int = 0,
-    /** Теги существующей идеи. Экран их пока не правит (неделя 7),
-     *  но обязан сохранить, иначе при редактировании они пропадут. */
+    /** Сохраняем старые связи для совместимости с ранее созданными резервными копиями. */
     val tagNames: List<String> = emptyList(),
     val isVoiceNote: Boolean = false,
     val isSaving: Boolean = false
@@ -63,10 +63,9 @@ class IdeaEditorViewModel(
     private val _uiState = MutableStateFlow(EditorUiState(isNew = ideaId == NEW_IDEA_ID))
     val uiState: StateFlow<EditorUiState> = _uiState.asStateFlow()
 
-    // extraBufferCapacity = 1, чтобы tryEmit срабатывал даже когда
-    // экран в этот момент не слушает (например, во время поворота).
-    private val _events = MutableSharedFlow<EditorEvent>(extraBufferCapacity = 1)
-    val events: SharedFlow<EditorEvent> = _events
+    // Сохраняем результат, пока после поворота или системного окна снова появится получатель.
+    private val _events = Channel<EditorEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
 
     init {
         loadInitialData()
@@ -141,7 +140,7 @@ class IdeaEditorViewModel(
         val title = state.title.trim()
 
         if (title.isEmpty()) {
-            _events.tryEmit(EditorEvent.EmptyTitle)
+            _events.trySend(EditorEvent.EmptyTitle)
             return
         }
         val category = state.categories.getOrNull(state.selectedCategoryIndex) ?: return
@@ -163,12 +162,14 @@ class IdeaEditorViewModel(
                     ),
                     tagNames = state.tagNames
                 )
-                _events.tryEmit(EditorEvent.Saved)
+                _events.trySend(EditorEvent.Saved)
+            } catch (error: CancellationException) {
+                throw error
             } catch (error: Exception) {
                 // Приложение не должно падать из-за ошибки записи -
                 // требование ТЗ. Показываем сообщение и оставляем форму.
                 _uiState.value = _uiState.value.copy(isSaving = false)
-                _events.tryEmit(EditorEvent.SaveFailed(error.message))
+                _events.trySend(EditorEvent.SaveFailed(error.message))
             }
         }
     }

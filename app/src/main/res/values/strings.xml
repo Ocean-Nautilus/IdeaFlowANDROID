@@ -42,8 +42,6 @@
     <!-- Экран детального просмотра -->
     <string name="details_title">Идея</string>
     <string name="details_no_content">Описание не заполнено</string>
-    <string name="details_tags">Теги</string>
-    <string name="details_tag">#%1$s</string>
     <string name="details_rating_value">Важность %1$d из 5</string>
     <string name="details_created">Создана %1$s</string>
     <string name="details_updated">Изменена %1$s</string>
@@ -89,17 +87,15 @@
     <string name="settings_theme">Тема приложения</string>
     <string name="theme_dark">Тёмная</string>
     <string name="theme_light">Светлая</string>
-    <string name="theme_system">Как на устройстве</string>
     <string name="settings_list">Список идей</string>
     <string name="settings_show_descriptions">Показывать описания</string>
     <string name="settings_descriptions_hint">Короткий текст под названием идеи в списке</string>
     <string-array name="theme_options">
         <item>@string/theme_dark</item>
         <item>@string/theme_light</item>
-        <item>@string/theme_system</item>
     </string-array>
     <string name="settings_backup">Перенос данных</string>
-    <string name="settings_backup_hint">Идеи, категории и теги в JSON-файле до 10 МБ. Импорт добавляет данные, сохраняя существующие записи. Полные совпадения пропускаются.</string>
+    <string name="settings_backup_hint">Идеи и категории в JSON-файле до 10 МБ. Импорт добавляет данные, сохраняя существующие записи. Полные совпадения пропускаются.</string>
     <string name="backup_export">Экспортировать данные</string>
     <string name="backup_import">Импортировать данные</string>
     <string name="backup_exported">Данные экспортированы</string>
@@ -109,9 +105,33 @@
     <string name="backup_invalid_file">Файл повреждён или имеет неверный формат IdeaFlow</string>
 
 
-    <string name="voice_input">Надиктовать описание</string>
-    <string name="voice_note">Идея надиктована голосом</string>
+    <string name="voice_input">Голосовой ввод</string>
     <string name="voice_prompt">Расскажите свою идею</string>
     <string name="voice_empty">Речь не распознана. Попробуйте ещё раз.</string>
     <string name="voice_unavailable">Голосовой ввод недоступен. Установите или включите приложение распознавания речи.</string>
+    <string name="categories_title">Категории</string>
+    <string name="category_name">Название категории</string>
+    <string name="category_color">Цвет категории</string>
+    <string name="category_add">Добавить категорию</string>
+    <string name="category_edit">Изменить категорию</string>
+    <string name="category_count">Идей: %1$d</string>
+    <string name="category_delete_title">Удалить категорию?</string>
+    <string name="category_delete_message">«%1$s» и все её идеи (%2$d) будут удалены безвозвратно.</string>
+    <string name="category_saved">Категория сохранена</string>
+    <string name="category_deleted">Категория удалена</string>
+    <string name="category_delete">Удалить категорию</string>
+    <string name="category_last_hint">Последнюю категорию удалить нельзя.</string>
+    <string name="category_current_color">Текущий цвет</string>
+    <string-array name="category_colors">
+        <item>Бирюзовый</item><item>Лаймовый</item><item>Зелёный</item>
+        <item>Голубой</item><item>Оранжевый</item><item>Фиолетовый</item>
+    </string-array>
+    <string name="categories_hint">Нажмите на категорию, чтобы изменить её или удалить.</string>
+    <string name="category_new_title">Новая категория</string>
+    <string name="palette_create">Создать свой цвет</string>
+    <string name="palette_name">Название цвета</string>
+    <string name="palette_default_name">Свой цвет %1$d</string>
+    <string name="palette_red">Красный</string>
+    <string name="palette_green">Зелёный</string>
+    <string name="palette_blue">Синий</string>
 </resources>

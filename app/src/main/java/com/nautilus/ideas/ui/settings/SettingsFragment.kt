@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.fragment.app.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Lifecycle
@@ -46,6 +47,7 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.categoriesButton.setOnClickListener { findNavController().navigate(R.id.categoriesFragment) }
         val settings = (requireActivity().application as IdeasApp).settings
         val themeLabels = resources.getStringArray(R.array.theme_options)
         binding.themeInput.setSimpleItems(themeLabels)

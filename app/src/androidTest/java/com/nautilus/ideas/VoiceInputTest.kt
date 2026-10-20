@@ -64,6 +64,8 @@ class VoiceInputTest {
                 }
                 assertEquals(expected, saved.content)
                 assertTrue(saved.isVoiceNote)
+                assertEquals(com.nautilus.ideas.viewmodels.EditorEvent.Saved,
+                    withTimeout(5_000) { model.events.first() })
                 if (id == existingId) assertEquals(123L, saved.createdAt)
             }
         } finally {

@@ -69,4 +69,9 @@
 
     </fragment>
 
+    <fragment
+        android:id="@+id/categoriesFragment"
+        android:name="com.nautilus.ideas.ui.categories.CategoriesFragment"
+        android:label="@string/categories_title"
+        tools:layout="@layout/fragment_categories" />
 </navigation>

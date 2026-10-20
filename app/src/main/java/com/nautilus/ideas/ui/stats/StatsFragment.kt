@@ -19,6 +19,8 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.DefaultValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.nautilus.ideas.R
 import com.nautilus.ideas.data.model.CategoryCount
 import com.nautilus.ideas.data.model.StatusCount
@@ -27,6 +29,7 @@ import com.nautilus.ideas.utils.IdeaStatusUi
 import com.nautilus.ideas.viewmodels.StatsUiState
 import com.nautilus.ideas.viewmodels.StatsViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 class StatsFragment : Fragment() {
 
@@ -66,6 +69,9 @@ class StatsFragment : Fragment() {
         barChart.legend.isEnabled = false
         barChart.axisRight.isEnabled = false
         barChart.axisLeft.textColor = ContextCompat.getColor(requireContext(), R.color.text_secondary)
+        barChart.axisLeft.valueFormatter = DefaultValueFormatter(0)
+        barChart.axisLeft.granularity = 1f
+        barChart.axisLeft.axisMinimum = 0f
         barChart.xAxis.textColor = ContextCompat.getColor(requireContext(), R.color.text_secondary)
         barChart.xAxis.granularity = 1f
     }
@@ -97,6 +103,9 @@ class StatsFragment : Fragment() {
             valueTextColor = Color.BLACK
             valueTextSize = 12f
             sliceSpace = 2f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float) = "${value.roundToInt()}%"
+            }
         }
         data = PieData(dataSet)
         invalidate()
@@ -109,6 +118,7 @@ class StatsFragment : Fragment() {
 
         val dataSet = BarDataSet(entries, "").apply {
             this.colors = colors
+            valueFormatter = DefaultValueFormatter(0)
             valueTextColor = ContextCompat.getColor(requireContext(), R.color.text_primary)
         }
         xAxis.valueFormatter = IndexAxisValueFormatter(labels)

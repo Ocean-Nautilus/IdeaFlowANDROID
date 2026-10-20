@@ -29,6 +29,19 @@ class AppSettingsTest {
             assertFalse(AppSettings(preferences).showDescriptions)
             preferences.edit().putInt("theme", 999).commit()
             assertEquals(AppCompatDelegate.MODE_NIGHT_YES, settings.themeMode)
+            preferences.edit().putInt("theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM).commit()
+            assertEquals(AppCompatDelegate.MODE_NIGHT_YES, settings.themeMode)
+            assertEquals(2, AppSettings.THEME_MODES.size)
+            settings.saveCategoryColor("Морской", "#1267ab")
+            assertEquals(mapOf("#1267AB" to "Морской"), AppSettings(preferences).categoryColors)
+            settings.saveCategoryColor("Морская волна", "#1267AB")
+            assertEquals(1, settings.categoryColors.size)
+            try {
+                settings.saveCategoryColor("Морская волна", "#123456")
+                org.junit.Assert.fail("Duplicate names must be rejected")
+            } catch (_: IllegalArgumentException) { }
+            preferences.edit().putString("category_colors", "{").commit()
+            assertTrue(settings.categoryColors.isEmpty())
         } finally {
             preferences.edit().clear().commit()
         }

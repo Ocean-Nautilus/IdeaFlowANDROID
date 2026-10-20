@@ -46,6 +46,11 @@
             android:text="@string/settings_descriptions_hint"
             android:textColor="@color/text_secondary" android:textSize="13sp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/categoriesButton" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="20dp"
+            android:text="@string/categories_title" />
+
         <TextView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="28dp" android:text="@string/settings_backup"

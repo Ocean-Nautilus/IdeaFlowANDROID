@@ -59,7 +59,9 @@ class IdeasViewModel(repository: IdeaRepository) : ViewModel() {
     private val filterState: StateFlow<FilterState> = combine(
         _query.debounce(250).distinctUntilChanged(),
         _statusFilter,
-        _categoryFilter,
+        combine(_categoryFilter, repository.observeCategories()) { selected, current ->
+            current.find { it.id == selected?.id }
+        }.distinctUntilChanged(),
         _sort
     ) { query, status, category, sort -> FilterState(query, status, category, sort) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), FilterState())

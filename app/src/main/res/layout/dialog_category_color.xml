@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="24dp">
+        <View android:id="@+id/colorPreview" android:layout_width="match_parent"
+            android:layout_height="64dp" android:importantForAccessibility="no" />
+        <com.google.android.material.textfield.TextInputLayout android:id="@+id/colorNameLayout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:hint="@string/palette_name">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/colorNameInput"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="textCapSentences" android:maxLength="24" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="@string/palette_red" android:labelFor="@id/redSlider" />
+        <com.google.android.material.slider.Slider android:id="@+id/redSlider"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:valueFrom="0" android:valueTo="255" android:stepSize="1"
+            android:contentDescription="@string/palette_red" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/palette_green" android:labelFor="@id/greenSlider" />
+        <com.google.android.material.slider.Slider android:id="@+id/greenSlider"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:valueFrom="0" android:valueTo="255" android:stepSize="1"
+            android:contentDescription="@string/palette_green" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/palette_blue" android:labelFor="@id/blueSlider" />
+        <com.google.android.material.slider.Slider android:id="@+id/blueSlider"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:valueFrom="0" android:valueTo="255" android:stepSize="1"
+            android:contentDescription="@string/palette_blue" />
+    </LinearLayout>
+</ScrollView>

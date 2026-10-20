@@ -14,7 +14,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.nautilus.ideas.R
@@ -32,7 +31,7 @@ import kotlinx.coroutines.launch
  * Экран детального просмотра идеи.
  *
  * Показывает всё, что не помещается в карточку списка: полный текст,
- * теги, даты создания и изменения. Отсюда идею правят и удаляют.
+ * даты создания и изменения. Отсюда идею правят и удаляют.
  */
 class IdeaDetailsFragment : Fragment() {
 
@@ -152,23 +151,6 @@ class IdeaDetailsFragment : Fragment() {
         updatedText.visibility =
             if (item.idea.updatedAt > item.idea.createdAt) View.VISIBLE else View.GONE
 
-        bindTags(item)
-    }
-
-    /** Теги идеи - видимый результат связи многие-ко-многим. */
-    private fun bindTags(item: IdeaWithDetails) = with(binding) {
-        tagChips.removeAllViews()
-        tagsLabel.visibility = if (item.tags.isEmpty()) View.GONE else View.VISIBLE
-        tagChips.visibility = if (item.tags.isEmpty()) View.GONE else View.VISIBLE
-
-        item.tags.forEach { tag ->
-            val chip = Chip(requireContext()).apply {
-                text = getString(R.string.details_tag, tag.name)
-                isClickable = false
-                isCheckable = false
-            }
-            tagChips.addView(chip)
-        }
     }
 
     private fun observeEvents() {

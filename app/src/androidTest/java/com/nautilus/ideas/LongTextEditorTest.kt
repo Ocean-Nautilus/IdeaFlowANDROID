@@ -31,6 +31,7 @@ class LongTextEditorTest {
         val title = "CodexLongTextTest_${System.nanoTime()}"
         val content = "LongDescription ".repeat(100) + "END"
         val scenario = ActivityScenario.launch(MainActivity::class.java)
+        lateinit var editorModel: com.nautilus.ideas.viewmodels.IdeaEditorViewModel
         try {
             onView(withId(R.id.addIdeaButton)).perform(click())
             val deadline = SystemClock.uptimeMillis() + 5_000
@@ -59,14 +60,20 @@ class LongTextEditorTest {
             assertTrue("Screen did not rotate", rotated)
             onView(withId(R.id.contentInput)).check(matches(withText(content)))
             onView(withId(R.id.titleInput)).check(matches(withText(title)))
-            onView(withId(R.id.saveButton)).perform(click())
-            scenario.onActivity {
-                android.util.Log.i("IdeaQA", "After save: title=" +
-                    it.findViewById<android.widget.EditText>(R.id.titleInput)?.text +
-                    "; category=" + it.findViewById<AutoCompleteTextView>(R.id.categoryInput)?.text +
-                    "; error=" + it.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.titleLayout)?.error +
-                    "; saveEnabled=" + it.findViewById<android.view.View>(R.id.saveButton)?.isEnabled)
+            scenario.onActivity { activity ->
+                val host = activity.supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as androidx.navigation.fragment.NavHostFragment
+                val editor = requireNotNull(host.childFragmentManager.primaryNavigationFragment)
+                editorModel = androidx.lifecycle.ViewModelProvider(editor)[com.nautilus.ideas.viewmodels.IdeaEditorViewModel::class.java]
+                val state = editorModel.uiState.value
+                assertEquals("ViewModel title after rotation", title, state.title)
+                assertEquals("ViewModel content after rotation", content, state.content)
+                assertTrue("Selected category must exist", state.categories.getOrNull(state.selectedCategoryIndex) != null)
             }
+            // Rotation can reopen the IME and move the footer during a coordinate-based click.
+            onView(withId(R.id.saveButton)).perform(closeSoftKeyboard())
+            androidx.test.espresso.Espresso.onIdle()
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
+            onView(withId(R.id.saveButton)).perform(click())
             val saved = withTimeout(5_000) {
                 app.repository.observeIdeas(query = title).first { ideas ->
                     ideas.any { it.idea.title == title }

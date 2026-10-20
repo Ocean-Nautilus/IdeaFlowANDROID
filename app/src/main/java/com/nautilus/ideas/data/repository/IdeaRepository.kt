@@ -14,6 +14,7 @@ import com.nautilus.ideas.data.model.IdeaWithDetails
 import com.nautilus.ideas.data.model.StatusCount
 import com.nautilus.ideas.data.model.Tag
 import kotlinx.coroutines.flow.Flow
+import androidx.room.withTransaction
 
 /**
  * Единая точка доступа к данным для слоя представления.
@@ -25,7 +26,8 @@ import kotlinx.coroutines.flow.Flow
 class IdeaRepository(
     private val ideaDao: IdeaDao,
     private val categoryDao: CategoryDao,
-    private val tagDao: TagDao
+    private val tagDao: TagDao,
+    private val database: AppDatabase
 ) {
 
     fun observeIdeas(): Flow<List<IdeaWithDetails>> = ideaDao.observeAll()
@@ -97,19 +99,39 @@ class IdeaRepository(
 
     suspend fun deleteIdea(idea: Idea) = ideaDao.delete(idea)
 
-    suspend fun addCategory(category: Category): Long = categoryDao.insert(category)
+    suspend fun saveCategory(category: Category): Long = database.withTransaction {
+        val name = category.name.trim()
+        require(name.isNotEmpty() && name.length <= 40) { "Название должно содержать от 1 до 40 символов" }
+        require(category.colorHex.matches(Regex("#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})"))) { "Некорректный цвет категории" }
+        val categories = categoryDao.getAll()
+        require(categories.none { it.id != category.id && it.name.equals(name, ignoreCase = true) }) {
+            "Категория с таким названием уже есть"
+        }
+        if (category.id == 0L) {
+            categoryDao.insert(category.copy(name = name)).also { check(it != -1L) { "Категория уже существует" } }
+        } else {
+            val original = requireNotNull(categories.find { it.id == category.id }) { "Категория удалена" }
+            categoryDao.update(original.copy(name = name, colorHex = category.colorHex))
+            category.id
+        }
+    }
 
-    suspend fun updateCategory(category: Category) = categoryDao.update(category)
-
-    /** Удаление категории удаляет и все её идеи — так настроен внешний ключ. */
-    suspend fun deleteCategory(category: Category) = categoryDao.delete(category)
+    suspend fun deleteCategory(category: Category, expectedIdeaCount: Int) = database.withTransaction {
+        require(categoryDao.getAll().size > 1) { "Нельзя удалить последнюю категорию" }
+        requireNotNull(categoryDao.getById(category.id)) { "Категория уже удалена" }
+        require(categoryDao.countIdeas(category.id) == expectedIdeaCount) {
+            "Количество идей изменилось. Подтвердите удаление ещё раз"
+        }
+        categoryDao.delete(category)
+    }
 
     companion object {
         /** Собирает репозиторий из уже открытой базы. */
         fun from(database: AppDatabase): IdeaRepository = IdeaRepository(
             ideaDao = database.ideaDao(),
             categoryDao = database.categoryDao(),
-            tagDao = database.tagDao()
+            tagDao = database.tagDao(),
+            database = database
         )
     }
 }
