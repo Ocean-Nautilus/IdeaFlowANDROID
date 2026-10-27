@@ -16,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.chip.Chip
 import com.nautilus.ideas.R
 import com.nautilus.ideas.data.model.IdeaWithDetails
 import com.nautilus.ideas.databinding.FragmentIdeaDetailsBinding
@@ -150,6 +151,16 @@ class IdeaDetailsFragment : Fragment() {
         // и показывать её незачем.
         updatedText.visibility =
             if (item.idea.updatedAt > item.idea.createdAt) View.VISIBLE else View.GONE
+
+        tagChips.removeAllViews()
+        tagChips.visibility = if (item.tags.isEmpty()) View.GONE else View.VISIBLE
+        item.tags.sortedBy { it.name }.forEach { tag ->
+            tagChips.addView(Chip(requireContext()).apply {
+                text = tag.name
+                isClickable = false
+                isCheckable = false
+            })
+        }
 
     }
 

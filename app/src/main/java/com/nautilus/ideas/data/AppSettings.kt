@@ -17,6 +17,10 @@ class AppSettings(private val preferences: SharedPreferences) {
         get() = preferences.getBoolean("show_descriptions", true)
         set(value) { preferences.edit().putBoolean("show_descriptions", value).apply() }
 
+    var showImportance: Boolean
+        get() = preferences.getBoolean("show_importance", true)
+        set(value) { preferences.edit().putBoolean("show_importance", value).apply() }
+
     val categoryColors: Map<String, String>
         get() = runCatching {
             val json = JSONObject(preferences.getString("category_colors", "{}") ?: "{}")

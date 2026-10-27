@@ -117,6 +117,9 @@ class IdeaEditorFragment : Fragment() {
             if (isBinding) return@doAfterTextChanged
             viewModel.onContentChanged(text?.toString().orEmpty())
         }
+        binding.tagsInput.doAfterTextChanged { text ->
+            if (!isBinding) viewModel.onTagsChanged(text?.toString().orEmpty())
+        }
 
         binding.categoryInput.setOnItemClickListener { _, _, position, _ ->
             viewModel.onCategorySelected(position)
@@ -176,6 +179,7 @@ class IdeaEditorFragment : Fragment() {
         if (contentInput.text?.toString() != state.content) {
             contentInput.setText(state.content)
         }
+        if (tagsInput.text?.toString() != state.tagsText) tagsInput.setText(state.tagsText)
 
         val categoryNames = state.categories.map { it.name }
         categoryInput.setSimpleItems(categoryNames.toTypedArray())

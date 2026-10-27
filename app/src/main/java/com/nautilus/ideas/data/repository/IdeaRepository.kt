@@ -68,7 +68,7 @@ class IdeaRepository(
      *
      * @return id сохранённой идеи
      */
-    suspend fun saveIdea(idea: Idea, tagNames: List<String>): Long {
+    suspend fun saveIdea(idea: Idea, tagNames: List<String>): Long = database.withTransaction {
         val ideaId = if (idea.id == 0L) {
             ideaDao.insert(idea)
         } else {
@@ -91,10 +91,10 @@ class IdeaRepository(
                 // поэтому в таком случае берём его id отдельным запросом.
                 val newId = tagDao.insert(Tag(name = name))
                 val tagId = if (newId != -1L) newId else tagDao.findIdByName(name)
-                tagId?.let { tagDao.linkTagToIdea(IdeaTagCrossRef(ideaId, it)) }
+                tagDao.linkTagToIdea(IdeaTagCrossRef(ideaId, requireNotNull(tagId)))
             }
 
-        return ideaId
+        ideaId
     }
 
     suspend fun deleteIdea(idea: Idea) = ideaDao.delete(idea)

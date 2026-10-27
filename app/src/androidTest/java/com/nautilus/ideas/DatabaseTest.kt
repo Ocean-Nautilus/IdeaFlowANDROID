@@ -27,6 +27,24 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DatabaseTest {
 
+    @Test
+    fun tagFailureRollsBackIdeaAndAllTagChanges(): Unit = runBlocking {
+        val category = database.categoryDao().insert(Category(name = "Атомарность", colorHex = "#123456"))
+        val repository = IdeaRepository.from(database)
+        val id = repository.saveIdea(Idea(title = "До", content = "", categoryId = category), listOf("старый"))
+        val original = requireNotNull(repository.getIdea(id))
+        database.openHelper.writableDatabase.execSQL("""
+            CREATE TRIGGER reject_new_tag BEFORE INSERT ON tags
+            WHEN NEW.name = 'ошибка' BEGIN SELECT RAISE(ABORT, 'test failure'); END
+        """.trimIndent())
+        try {
+            repository.saveIdea(original.idea.copy(title = "После"), listOf("новый", "ошибка"))
+            org.junit.Assert.fail("Expected a tag write failure")
+        } catch (_: android.database.sqlite.SQLiteException) { }
+        assertEquals(original, repository.getIdea(id))
+        assertEquals(listOf("старый"), database.tagDao().getAll().map { it.name })
+    }
+
     private lateinit var database: AppDatabase
 
     @Before

@@ -35,6 +35,13 @@ class IdeaAdapter(
             notifyItemRangeChanged(0, itemCount)
         }
 
+    var showImportance: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyItemRangeChanged(0, itemCount)
+        }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IdeaViewHolder {
         val binding = ItemIdeaBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -69,6 +76,7 @@ class IdeaAdapter(
             val context = root.context
 
             titleText.text = item.idea.title
+            importanceLamps.visibility = if (showImportance) android.view.View.VISIBLE else android.view.View.GONE
             contentText.text = item.idea.content
             categoryText.text = item.category.name
             dateText.text = DateFormatter.formatShort(item.idea.createdAt)

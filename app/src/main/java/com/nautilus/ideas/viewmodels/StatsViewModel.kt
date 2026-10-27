@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nautilus.ideas.IdeasApp
 import com.nautilus.ideas.data.model.CategoryCount
 import com.nautilus.ideas.data.model.StatusCount
+import com.nautilus.ideas.data.model.IdeaStatus
 import com.nautilus.ideas.data.repository.IdeaRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,7 @@ data class StatsUiState(
     val categoryCounts: List<CategoryCount> = emptyList()
 ) {
     val isEmpty: Boolean get() = !isLoading && total == 0
+    fun statusCount(status: IdeaStatus): Int = statusCounts.firstOrNull { it.status == status }?.amount ?: 0
 }
 
 class StatsViewModel(repository: IdeaRepository) : ViewModel() {

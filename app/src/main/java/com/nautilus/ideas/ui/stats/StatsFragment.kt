@@ -24,6 +24,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.nautilus.ideas.R
 import com.nautilus.ideas.data.model.CategoryCount
 import com.nautilus.ideas.data.model.StatusCount
+import com.nautilus.ideas.data.model.IdeaStatus
 import com.nautilus.ideas.databinding.FragmentStatsBinding
 import com.nautilus.ideas.utils.IdeaStatusUi
 import com.nautilus.ideas.viewmodels.StatsUiState
@@ -53,8 +54,10 @@ class StatsFragment : Fragment() {
     }
 
     private fun setUpTiles() {
-        // Заготовка под 4 плитки: "Всего", "Новые", "В работе", "Завершено".
-        // Сами значения проставляются в render(), здесь только создаём View.
+        binding.totalStat.statLabel.setText(R.string.stats_total)
+        binding.newStat.statLabel.setText(R.string.stats_new)
+        binding.inProgressStat.statLabel.setText(R.string.status_in_progress)
+        binding.completedStat.statLabel.setText(R.string.stats_completed)
     }
 
     private fun setUpCharts() = with(binding) {
@@ -88,6 +91,11 @@ class StatsFragment : Fragment() {
         emptyStatsText.visibility = if (state.isEmpty) View.VISIBLE else View.GONE
 
         if (state.isLoading) return@with
+
+        totalStat.statValue.text = state.total.toString()
+        newStat.statValue.text = state.statusCount(IdeaStatus.NEW).toString()
+        inProgressStat.statValue.text = state.statusCount(IdeaStatus.IN_PROGRESS).toString()
+        completedStat.statValue.text = state.statusCount(IdeaStatus.DONE).toString()
 
         renderPie(state.categoryCounts)
         renderBar(state.statusCounts)

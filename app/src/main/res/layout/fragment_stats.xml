@@ -24,16 +24,31 @@
         <!-- Числовые показатели -->
         <LinearLayout
             android:id="@+id/statTilesRow1"
+            android:baselineAligned="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" />
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+            <include android:id="@+id/totalStat" layout="@layout/item_stat_tile"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="10dp" />
+            <include android:id="@+id/newStat" layout="@layout/item_stat_tile"
+                android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/statTilesRow2"
+            android:baselineAligned="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:orientation="horizontal" />
+            android:orientation="horizontal">
+            <include android:id="@+id/inProgressStat" layout="@layout/item_stat_tile"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="10dp" />
+            <include android:id="@+id/completedStat" layout="@layout/item_stat_tile"
+                android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+        </LinearLayout>
 
         <!-- Идеи по категориям -->
         <androidx.cardview.widget.CardView

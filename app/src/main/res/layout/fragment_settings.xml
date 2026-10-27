@@ -36,6 +36,11 @@
             android:layout_height="wrap_content" android:minHeight="48dp" android:layout_marginTop="20dp"
             android:text="@string/settings_show_descriptions" android:textColor="@color/text_primary" />
 
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/showImportanceSwitch" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp"
+            android:text="@string/settings_show_importance" android:textColor="@color/text_primary" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/categoriesButton" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:layout_marginTop="20dp"

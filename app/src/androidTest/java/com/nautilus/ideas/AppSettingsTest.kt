@@ -21,12 +21,17 @@ class AppSettingsTest {
             val settings = AppSettings(preferences)
             assertEquals(AppCompatDelegate.MODE_NIGHT_YES, settings.themeMode)
             assertTrue(settings.showDescriptions)
+            assertTrue(settings.showImportance)
             for (mode in AppSettings.THEME_MODES) {
                 settings.themeMode = mode
                 assertEquals(mode, AppSettings(preferences).themeMode)
             }
             settings.showDescriptions = false
             assertFalse(AppSettings(preferences).showDescriptions)
+            settings.showImportance = false
+            assertFalse(AppSettings(preferences).showImportance)
+            settings.showImportance = true
+            assertTrue(AppSettings(preferences).showImportance)
             preferences.edit().putInt("theme", 999).commit()
             assertEquals(AppCompatDelegate.MODE_NIGHT_YES, settings.themeMode)
             preferences.edit().putInt("theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM).commit()

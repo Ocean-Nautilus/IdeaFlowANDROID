@@ -77,6 +77,7 @@ class IdeasFragment : Fragment() {
             )
         })
         adapter.showDescriptions = (requireActivity().application as IdeasApp).settings.showDescriptions
+        adapter.showImportance = (requireActivity().application as IdeasApp).settings.showImportance
 
         binding.ideasList.layoutManager = LinearLayoutManager(requireContext())
         binding.ideasList.adapter = adapter
@@ -99,6 +100,7 @@ class IdeasFragment : Fragment() {
         super.onResume()
         val settings = (requireActivity().application as IdeasApp).settings
         adapter.showDescriptions = settings.showDescriptions
+        adapter.showImportance = settings.showImportance
     }
     private var isBinding = false
 

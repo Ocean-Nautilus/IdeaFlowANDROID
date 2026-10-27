@@ -30,8 +30,8 @@ data class EditorUiState(
     val selectedCategoryIndex: Int = 0,
     val status: IdeaStatus = IdeaStatus.NEW,
     val rating: Int = 0,
-    /** Сохраняем старые связи для совместимости с ранее созданными резервными копиями. */
-    val tagNames: List<String> = emptyList(),
+    val tagsText: String = "",
+    val originalTagNames: List<String> = emptyList(),
     val isVoiceNote: Boolean = false,
     val isSaving: Boolean = false
 )
@@ -90,7 +90,8 @@ class IdeaEditorViewModel(
                     .coerceAtLeast(0),
                 status = existing?.idea?.status ?: IdeaStatus.NEW,
                 rating = existing?.idea?.rating ?: 0,
-                tagNames = existing?.tags?.map { it.name }.orEmpty(),
+                tagsText = existing?.tags?.map { it.name }?.sorted()?.joinToString(", ").orEmpty(),
+                originalTagNames = existing?.tags?.map { it.name }?.sorted().orEmpty(),
                 isVoiceNote = existing?.idea?.isVoiceNote ?: false
             )
         }
@@ -104,6 +105,10 @@ class IdeaEditorViewModel(
 
     fun onContentChanged(value: String) {
         _uiState.value = _uiState.value.copy(content = value)
+    }
+
+    fun onTagsChanged(value: String) {
+        _uiState.value = _uiState.value.copy(tagsText = value)
     }
 
     fun onVoiceRecognized(value: String) {
@@ -160,7 +165,9 @@ class IdeaEditorViewModel(
                         rating = state.rating,
                         isVoiceNote = state.isVoiceNote
                     ),
-                    tagNames = state.tagNames
+                    tagNames = if (state.tagsText == state.originalTagNames.joinToString(", ")) {
+                        state.originalTagNames
+                    } else state.tagsText.split(',', '\n')
                 )
                 _events.trySend(EditorEvent.Saved)
             } catch (error: CancellationException) {

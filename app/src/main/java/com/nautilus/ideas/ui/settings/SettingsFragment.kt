@@ -60,6 +60,8 @@ class SettingsFragment : Fragment() {
         binding.showDescriptionsSwitch.setOnCheckedChangeListener { _, checked ->
             settings.showDescriptions = checked
         }
+        binding.showImportanceSwitch.isChecked = settings.showImportance
+        binding.showImportanceSwitch.setOnCheckedChangeListener { _, checked -> settings.showImportance = checked }
         binding.exportButton.setOnClickListener {
             exportFile.launch("IdeaFlow-${LocalDate.now()}.json")
         }

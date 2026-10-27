@@ -41,7 +41,7 @@ class VoiceInputTest {
         try {
             val categoryId = database.categoryDao().insert(Category(name = "Тест", colorHex = "#123456"))
             val existingId = repository.saveIdea(Idea(title = "Старая", content = "Текст", categoryId = categoryId,
-                createdAt = 123L), emptyList())
+                createdAt = 123L), listOf("две,мысли"))
             for (id in listOf(IdeaEditorViewModel.NEW_IDEA_ID, existingId)) {
                 val model = editor(id)
                 withTimeout(5_000) { model.uiState.first { !it.isLoading } }
@@ -66,7 +66,10 @@ class VoiceInputTest {
                 assertTrue(saved.isVoiceNote)
                 assertEquals(com.nautilus.ideas.viewmodels.EditorEvent.Saved,
                     withTimeout(5_000) { model.events.first() })
-                if (id == existingId) assertEquals(123L, saved.createdAt)
+                if (id == existingId) {
+                    assertEquals(123L, saved.createdAt)
+                    assertEquals(listOf("две,мысли"), requireNotNull(repository.getIdea(id)).tags.map { it.name })
+                }
             }
         } finally {
             instrumentation.runOnMainSync { store.clear() }

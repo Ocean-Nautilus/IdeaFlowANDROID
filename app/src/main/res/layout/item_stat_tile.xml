@@ -1,0 +1,9 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="16dp" android:background="@drawable/bg_stat_tile">
+    <TextView android:id="@+id/statValue" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:text="0" android:textSize="28sp"
+        android:textStyle="bold" android:textColor="@color/text_primary" />
+    <TextView android:id="@+id/statLabel" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:textSize="13sp" android:textColor="@color/text_secondary" />
+</LinearLayout>

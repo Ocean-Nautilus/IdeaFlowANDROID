@@ -130,4 +130,9 @@
     <string name="palette_red">Красный</string>
     <string name="palette_green">Зелёный</string>
     <string name="palette_blue">Синий</string>
+    <string name="stats_total">Всего идей</string>
+    <string name="stats_new">Новые</string>
+    <string name="stats_completed">Завершено</string>
+    <string name="settings_show_importance">Показывать важность</string>
+    <string name="editor_tags">Теги через запятую (необязательно)</string>
 </resources>

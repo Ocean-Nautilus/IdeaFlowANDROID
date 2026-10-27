@@ -161,6 +161,11 @@
                     android:visibility="gone"
                     tools:visibility="visible" />
 
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/tagChips" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                    android:visibility="gone" />
+
                 <TextView
                     android:id="@+id/createdText"
                     android:layout_width="match_parent"
