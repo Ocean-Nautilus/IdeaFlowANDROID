@@ -1,5 +1,6 @@
 package com.nautilus.ideas.data.db
 
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.nautilus.ideas.data.model.Category
 import com.nautilus.ideas.data.model.Idea
 import com.nautilus.ideas.data.model.IdeaStatus
@@ -12,14 +13,21 @@ import com.nautilus.ideas.data.model.IdeaStatus
  */
 object DatabaseSeeder {
 
-    suspend fun seed(database: AppDatabase) {
-        val categoryDao = database.categoryDao()
-        val ideaDao = database.ideaDao()
+    // Room вызывает onCreate внутри транзакции: первый читатель получит все примеры сразу.
+    fun seed(db: SupportSQLiteDatabase) {
+        fun insertCategory(category: Category): Long = db.compileStatement(
+            "INSERT INTO categories(name, colorHex, createdAt) VALUES (?, ?, ?)"
+        ).use { statement ->
+            statement.bindString(1, category.name)
+            statement.bindString(2, category.colorHex)
+            statement.bindLong(3, category.createdAt)
+            statement.executeInsert()
+        }
 
         // --- категории ---
-        val studyId = categoryDao.insert(Category(name = "Учёба", colorHex = "#D2F84B"))
-        val workId = categoryDao.insert(Category(name = "Работа", colorHex = "#5CD16A"))
-        val personalId = categoryDao.insert(Category(name = "Личное", colorHex = "#4DD0C4"))
+        val studyId = insertCategory(Category(name = "Учёба", colorHex = "#D2F84B"))
+        val workId = insertCategory(Category(name = "Работа", colorHex = "#5CD16A"))
+        val personalId = insertCategory(Category(name = "Личное", colorHex = "#4DD0C4"))
 
         // --- идеи ---
         val day = 24L * 60 * 60 * 1000
@@ -82,6 +90,12 @@ object DatabaseSeeder {
             )
         )
 
-        samples.forEach { ideaDao.insert(it) }
+        samples.forEach { idea ->
+            db.execSQL("""
+                INSERT INTO ideas(title, content, categoryId, status, rating, isVoiceNote, createdAt, updatedAt, backupId)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(), arrayOf(idea.title, idea.content, idea.categoryId, idea.status.name,
+                idea.rating, if (idea.isVoiceNote) 1 else 0, idea.createdAt, idea.updatedAt, idea.backupId))
+        }
     }
 }

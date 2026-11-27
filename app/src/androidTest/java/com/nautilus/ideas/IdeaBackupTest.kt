@@ -57,16 +57,46 @@ class IdeaBackupTest {
         val expected = source.ideaDao().getAll().first()
         assertEquals(2, actual.size)
         actual.forEach {
-            assertEquals(expected.idea.copy(id = 0, categoryId = 0), it.idea.copy(id = 0, categoryId = 0))
+            assertEquals(expected.idea.copy(id = 0, categoryId = 0, backupId = ""), it.idea.copy(id = 0, categoryId = 0, backupId = ""))
             assertEquals("Импорт", it.category.name)
             assertEquals(listOf("проект"), it.tags.map { tag -> tag.name })
             assertNotEquals(localId, it.idea.categoryId)
         }
         assertEquals(3, target.categoryDao().getAll().size)
+        assertEquals(source.ideaDao().getAll().map { it.idea.backupId }.toSet(), actual.map { it.idea.backupId }.toSet())
         assertEquals(2, target.tagDao().getAll().size)
         assertEquals(ImportResult(0, 2), backup.importJson(json))
         assertEquals(2, target.ideaDao().getAll().size)
         assertEquals("Локальная", target.categoryDao().getById(localId)?.name)
+    }
+
+    @Test
+    fun editedIdeaIsNotDuplicatedByNewBackup() = runBlocking {
+        val backup = IdeaBackup(target)
+        val json = IdeaBackup(source).exportJson()
+        backup.importJson(json)
+        val idea = target.ideaDao().getAll().first().idea
+        target.ideaDao().update(idea.copy(title = "Изменена после импорта", updatedAt = 9_000))
+        assertEquals(ImportResult(0, 2), backup.importJson(json))
+        assertEquals(2, target.ideaDao().getAll().size)
+        assertEquals("Изменена после импорта", target.ideaDao().getById(idea.id)?.idea?.title)
+    }
+
+    @Test
+    fun namesAreMergedIgnoringCaseAndLegacyBackupStillImports() = runBlocking {
+        val category = target.categoryDao().insert(Category(name = "импорт", colorHex = "#123456"))
+        val tag = target.tagDao().insert(Tag(name = "проект"))
+        val json = JSONObject(IdeaBackup(source).exportJson()).put("version", 1)
+        json.getJSONArray("tags").getJSONObject(1).put("name", "ПРОЕКТ")
+        val backup = IdeaBackup(target)
+        assertEquals(ImportResult(2, 0), backup.importJson(json.toString()))
+        assertEquals(2, target.categoryDao().getAll().size)
+        assertEquals(2, target.tagDao().getAll().size)
+        target.ideaDao().getAll().forEach {
+            assertEquals(category, it.idea.categoryId)
+            assertEquals(tag, it.tags.single().id)
+        }
+        assertEquals(ImportResult(0, 2), backup.importJson(json.toString()))
     }
 
     @Test
@@ -85,6 +115,9 @@ class IdeaBackupTest {
             { it.getJSONArray("ideas").getJSONObject(0).put("status", "UNKNOWN") },
             { it.getJSONArray("ideas").getJSONObject(0).put("isVoiceNote", "true") },
             { it.getJSONArray("categories").getJSONObject(0).put("colorHex", "invalid") },
+            { it.getJSONArray("categories").getJSONObject(0).put("colorHex", "#12345678") },
+            { it.getJSONArray("categories").getJSONObject(0).put("name", "x".repeat(41)) },
+            { it.getJSONArray("ideas").getJSONObject(0).put("backupId", "invalid") },
             { it.getJSONArray("ideas").getJSONObject(1).put("id", it.getJSONArray("ideas").getJSONObject(0).getLong("id")) }
         )
         val invalid = mutations.map { mutation -> JSONObject(valid).also(mutation).toString() } +

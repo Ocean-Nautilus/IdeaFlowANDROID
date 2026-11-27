@@ -1,5 +1,7 @@
 package com.nautilus.ideas.data.model
 
+import androidx.room.ColumnInfo
+import java.util.UUID
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -46,5 +48,8 @@ data class Idea(
 
     val createdAt: Long = System.currentTimeMillis(),
 
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(defaultValue = "''")
+    val backupId: String = UUID.randomUUID().toString()
 )

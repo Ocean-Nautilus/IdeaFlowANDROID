@@ -1,5 +1,8 @@
 package com.nautilus.ideas.viewmodels
 
+import android.os.Bundle
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -43,6 +46,7 @@ sealed interface EditorEvent {
 
     /** Заголовок пустой - подсветить поле. */
     data object EmptyTitle : EditorEvent
+    data object MissingCategory : EditorEvent
 
     /** Не удалось сохранить: место на диске, повреждённая база и т.п. */
     data class SaveFailed(val reason: String?) : EditorEvent
@@ -57,7 +61,8 @@ sealed interface EditorEvent {
  */
 class IdeaEditorViewModel(
     private val repository: IdeaRepository,
-    private val ideaId: Long
+    private val ideaId: Long,
+    private val savedState: SavedStateHandle = SavedStateHandle()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState(isNew = ideaId == NEW_IDEA_ID))
@@ -67,8 +72,35 @@ class IdeaEditorViewModel(
     private val _events = Channel<EditorEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
+    private var initial: EditorUiState? = null
+    private var missingIdea = false
+    val hasUnsavedChanges: Boolean
+        get() = initial?.let { formValues(it) != formValues(_uiState.value) } ?: false
+
+    private fun formValues(state: EditorUiState) = listOf(state.title, state.content, state.tagsText,
+        state.categories.getOrNull(state.selectedCategoryIndex)?.id, state.status, state.rating, state.isVoiceNote)
+
+    fun discardDraft() { savedState.remove<Bundle>("draft") }
+
     init {
         loadInitialData()
+        viewModelScope.launch {
+            uiState.collect { state ->
+                if (!state.isLoading && hasUnsavedChanges) {
+                    savedState["draft"] = Bundle().apply {
+                        putString("title", state.title)
+                        putString("content", state.content)
+                        putString("tags", state.tagsText)
+                        putLong("category", state.categories.getOrNull(state.selectedCategoryIndex)?.id ?: -1)
+                        putString("status", state.status.name)
+                        putInt("rating", state.rating)
+                        putBoolean("voice", state.isVoiceNote)
+                    }
+                } else if (!state.isLoading) {
+                    discardDraft()
+                }
+            }
+        }
     }
 
     private fun loadInitialData() {
@@ -78,9 +110,10 @@ class IdeaEditorViewModel(
             val categories = repository.observeCategories().first()
             val existing = if (ideaId == NEW_IDEA_ID) null else repository.getIdea(ideaId)
 
-            _uiState.value = EditorUiState(
+            missingIdea = ideaId != NEW_IDEA_ID && existing == null
+            val loaded = EditorUiState(
                 isLoading = false,
-                isNew = existing == null,
+                isNew = ideaId == NEW_IDEA_ID,
                 title = existing?.idea?.title.orEmpty(),
                 content = existing?.idea?.content.orEmpty(),
                 categories = categories,
@@ -93,6 +126,17 @@ class IdeaEditorViewModel(
                 tagsText = existing?.tags?.map { it.name }?.sorted()?.joinToString(", ").orEmpty(),
                 originalTagNames = existing?.tags?.map { it.name }?.sorted().orEmpty(),
                 isVoiceNote = existing?.idea?.isVoiceNote ?: false
+            )
+            initial = loaded
+            val draft = savedState.get<Bundle>("draft")
+            _uiState.value = if (draft == null) loaded else loaded.copy(
+                title = draft.getString("title").orEmpty(),
+                content = draft.getString("content").orEmpty(),
+                tagsText = draft.getString("tags").orEmpty(),
+                selectedCategoryIndex = categories.indexOfFirst { it.id == draft.getLong("category") }.coerceAtLeast(0),
+                status = IdeaStatus.entries.firstOrNull { it.name == draft.getString("status") } ?: loaded.status,
+                rating = draft.getInt("rating"),
+                isVoiceNote = draft.getBoolean("voice")
             )
         }
     }
@@ -143,12 +187,21 @@ class IdeaEditorViewModel(
     fun save() {
         val state = _uiState.value
         val title = state.title.trim()
+        if (state.isLoading || state.isSaving) return
+        if (missingIdea) {
+            _events.trySend(EditorEvent.SaveFailed("Идея больше не существует. Закройте редактор и создайте новую идею."))
+            return
+        }
 
         if (title.isEmpty()) {
             _events.trySend(EditorEvent.EmptyTitle)
             return
         }
-        val category = state.categories.getOrNull(state.selectedCategoryIndex) ?: return
+        val category = state.categories.getOrNull(state.selectedCategoryIndex)
+        if (category == null) {
+            _events.trySend(EditorEvent.MissingCategory)
+            return
+        }
         if (state.isSaving) return
 
         _uiState.value = state.copy(isSaving = true)
@@ -169,6 +222,8 @@ class IdeaEditorViewModel(
                         state.originalTagNames
                     } else state.tagsText.split(',', '\n')
                 )
+                initial = _uiState.value
+                discardDraft()
                 _events.trySend(EditorEvent.Saved)
             } catch (error: CancellationException) {
                 throw error
@@ -188,7 +243,7 @@ class IdeaEditorViewModel(
         fun factory(ideaId: Long): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as IdeasApp
-                IdeaEditorViewModel(app.repository, ideaId)
+                IdeaEditorViewModel(app.repository, ideaId, createSavedStateHandle())
             }
         }
     }

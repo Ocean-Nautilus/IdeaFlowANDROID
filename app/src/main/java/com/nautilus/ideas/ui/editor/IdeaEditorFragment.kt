@@ -9,6 +9,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -82,6 +84,7 @@ class IdeaEditorFragment : Fragment() {
         setUpButtons()
         observeState()
         observeEvents()
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { confirmClose() }
     }
 
     private fun setUpStatusChips() {
@@ -147,8 +150,25 @@ class IdeaEditorFragment : Fragment() {
             }
         }
         binding.saveButton.setOnClickListener { viewModel.save() }
-        binding.cancelButton.setOnClickListener { findNavController().navigateUp() }
-        binding.closeButton.setOnClickListener { findNavController().navigateUp() }
+        binding.cancelButton.setOnClickListener { confirmClose() }
+        binding.closeButton.setOnClickListener { confirmClose() }
+    }
+
+    private fun confirmClose() {
+        if (viewModel.uiState.value.isSaving) return
+        if (!viewModel.hasUnsavedChanges) {
+            viewModel.discardDraft()
+            findNavController().navigateUp()
+            return
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.draft_exit_title)
+            .setMessage(R.string.draft_exit_message)
+            .setNegativeButton(R.string.draft_continue, null)
+            .setPositiveButton(R.string.draft_discard) { _, _ ->
+                viewModel.discardDraft()
+                findNavController().navigateUp()
+            }.show()
     }
 
     private fun observeState() {
@@ -163,7 +183,10 @@ class IdeaEditorFragment : Fragment() {
         headerText.setText(
             if (state.isNew) R.string.editor_title_new else R.string.editor_title_edit
         )
-        saveButton.isEnabled = !state.isSaving
+        saveButton.isEnabled = !state.isLoading && !state.isSaving
+        listOf(titleInput, contentInput, tagsInput, categoryInput, ratingSlider, cancelButton, closeButton)
+            .forEach { it.isEnabled = !state.isLoading && !state.isSaving }
+        for (index in 0 until statusChips.childCount) statusChips.getChildAt(index).isEnabled = !state.isLoading && !state.isSaving
         voiceInputButton.isEnabled = !state.isLoading && !state.isSaving
         savingProgress.visibility = if (state.isSaving) View.VISIBLE else View.GONE
 
@@ -206,6 +229,8 @@ class IdeaEditorFragment : Fragment() {
                 viewModel.events.collect { event ->
                     when (event) {
                         EditorEvent.Saved -> findNavController().navigateUp()
+
+                        EditorEvent.MissingCategory -> showMessage(getString(R.string.error_category_required))
 
                         EditorEvent.EmptyTitle -> {
                             // Требование ТЗ: подсветка поля и сообщение.

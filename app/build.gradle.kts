@@ -8,6 +8,7 @@ plugins {
 android {
     namespace = "com.nautilus.ideas"
     compileSdk = 34
+    sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
 
     defaultConfig {
         applicationId = "com.nautilus.ideas"

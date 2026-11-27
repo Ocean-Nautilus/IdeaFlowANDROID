@@ -43,7 +43,7 @@
                 android:textColor="@color/text_secondary" />
             <com.google.android.material.chip.ChipGroup android:id="@+id/colorChoices"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:saveEnabled="false" app:singleSelection="true" />
+                android:layout_marginTop="8dp" android:saveEnabled="false" app:singleSelection="true" app:selectionRequired="true" />
             <com.google.android.material.button.MaterialButton android:id="@+id/createColorButton"
                 style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:text="@string/palette_create" />

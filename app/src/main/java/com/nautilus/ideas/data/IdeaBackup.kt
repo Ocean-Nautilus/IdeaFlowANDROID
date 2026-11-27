@@ -20,7 +20,7 @@ class IdeaBackup(private val database: AppDatabase) {
         val categories = database.categoryDao().getAll()
         val tags = database.tagDao().getAll()
         val ideas = database.ideaDao().getAll()
-        JSONObject().put("format", "ideaflow").put("version", 1)
+        JSONObject().put("format", "ideaflow").put("version", 2)
             .put("categories", JSONArray(categories.map {
                 JSONObject().put("id", it.id).put("name", it.name)
                     .put("colorHex", it.colorHex).put("createdAt", it.createdAt)
@@ -30,7 +30,7 @@ class IdeaBackup(private val database: AppDatabase) {
             }))
             .put("ideas", JSONArray(ideas.map { item ->
                 val idea = item.idea
-                JSONObject().put("id", idea.id).put("title", idea.title)
+                JSONObject().put("id", idea.id).put("backupId", idea.backupId).put("title", idea.title)
                     .put("content", idea.content).put("categoryId", idea.categoryId)
                     .put("status", idea.status.name).put("rating", idea.rating)
                     .put("isVoiceNote", idea.isVoiceNote).put("createdAt", idea.createdAt)
@@ -43,15 +43,16 @@ class IdeaBackup(private val database: AppDatabase) {
         val tokener = JSONTokener(text)
         val root = tokener.nextValue() as? JSONObject ?: error("Ожидается файл JSON IdeaFlow")
         require(tokener.nextClean() == '\u0000') { "Лишние данные в конце файла" }
-        require(root.string("format") == "ideaflow" && root.number("version") == 1L) {
+        require(root.string("format") == "ideaflow" && root.number("version") in 1L..2L) {
             "Неподдерживаемый формат или версия файла"
         }
+        val hasStableIds = root.number("version") == 2L
         val categories = root.getJSONArray("categories").objects().map {
-            Category(id = it.number("id"), name = it.string("name"),
+            Category(id = it.number("id"), name = it.string("name").trim(),
                 colorHex = it.string("colorHex"), createdAt = it.number("createdAt"))
         }
         val tags = root.getJSONArray("tags").objects().map {
-            Tag(id = it.number("id"), name = it.string("name"))
+            Tag(id = it.number("id"), name = it.string("name").trim().lowercase())
         }
         val entries = root.getJSONArray("ideas").objects().map {
             val rating = it.number("rating")
@@ -65,17 +66,18 @@ class IdeaBackup(private val database: AppDatabase) {
             Entry(Idea(id = it.number("id"), title = it.string("title"),
                 content = it.string("content"), categoryId = it.number("categoryId"),
                 status = status, rating = rating.toInt(),
-                isVoiceNote = voice, createdAt = it.number("createdAt"), updatedAt = it.number("updatedAt")),
+                isVoiceNote = voice, createdAt = it.number("createdAt"), updatedAt = it.number("updatedAt"),
+                backupId = if (hasStableIds) it.string("backupId").lowercase() else ""),
                 List(tagIds.length()) { index -> integer(tagIds.get(index), "tagIds") })
         }
-        require(categories.all { it.id > 0 && it.name.isNotBlank() && it.createdAt >= 0 &&
-            it.colorHex.matches(Regex("#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?")) }) { "Некорректные категории" }
+        require(categories.all { it.id > 0 && it.name.isNotBlank() && it.name.length <= 40 && it.createdAt >= 0 &&
+            it.colorHex.matches(Regex("#[0-9a-fA-F]{6}")) }) { "Некорректные категории" }
         require(tags.all { it.id > 0 && it.name.isNotBlank() }) { "Некорректные теги" }
         require(categories.map { it.id }.distinct().size == categories.size &&
-            categories.map { it.name }.distinct().size == categories.size &&
             tags.map { it.id }.distinct().size == tags.size &&
-            tags.map { it.name }.distinct().size == tags.size &&
             entries.map { it.idea.id }.distinct().size == entries.size) { "Повторяющиеся идентификаторы или названия" }
+        require(!hasStableIds || (entries.all { it.idea.backupId.matches(Regex("(?:[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")) } &&
+            entries.map { it.idea.backupId }.distinct().size == entries.size)) { "Некорректные идентификаторы идей" }
         val categoryIds = categories.map { it.id }.toSet()
         val tagIds = tags.map { it.id }.toSet()
         require(entries.all { entry ->
@@ -90,27 +92,33 @@ class IdeaBackup(private val database: AppDatabase) {
             val categoryDao = database.categoryDao()
             val tagDao = database.tagDao()
             val ideaDao = database.ideaDao()
-            val existingCategories = categoryDao.getAll().associateBy { it.name }
-            val existingTags = tagDao.getAll().associateBy { it.name }
+            val existingCategories = categoryDao.getAll().associate { it.name.lowercase() to it.id }.toMutableMap()
+            val existingTags = tagDao.getAll().associate { it.name.lowercase() to it.id }.toMutableMap()
             val categoryMap = categories.associate {
-                it.id to (existingCategories[it.name]?.id ?: categoryDao.insert(it.copy(id = 0)))
+                it.id to (existingCategories.getOrPut(it.name.lowercase()) { categoryDao.insert(it.copy(id = 0)).also { id -> check(id > 0) } })
             }
             val tagMap = tags.associate {
-                it.id to (existingTags[it.name]?.id ?: tagDao.insert(it.copy(id = 0)))
+                it.id to (existingTags.getOrPut(it.name.lowercase()) { tagDao.insert(it.copy(id = 0)).also { id -> check(id > 0) } })
             }
-            val existing = ideaDao.getAll().map {
-                Entry(it.idea.copy(id = 0), it.tags.map { tag -> tag.id }.sorted())
+            val currentIdeas = ideaDao.getAll()
+            val stableIds = currentIdeas.map { it.idea.backupId }.toMutableSet()
+            // shortcut: у копий версии 1 нет постоянного ID; для них остаётся сравнение содержимого.
+            val existing = currentIdeas.map {
+                Entry(it.idea.copy(id = 0, backupId = ""), it.tags.map { tag -> tag.id }.sorted())
             }.groupingBy { it }.eachCount().toMutableMap()
             var added = 0
             for (entry in entries) {
                 val idea = entry.idea.copy(id = 0, categoryId = categoryMap.getValue(entry.idea.categoryId))
-                val mappedTags = entry.tagIds.map { tagMap.getValue(it) }.sorted()
-                val key = Entry(idea, mappedTags)
-                val matches = existing[key] ?: 0
+                if (hasStableIds && idea.backupId in stableIds) continue
+                val mappedTags = entry.tagIds.map { tagMap.getValue(it) }.distinct().sorted()
+                val key = Entry(idea.copy(backupId = ""), mappedTags)
+                val matches = if (hasStableIds) 0 else existing[key] ?: 0
                 if (matches > 0) {
                     existing[key] = matches - 1
                 } else {
-                    val id = ideaDao.insert(idea)
+                    val imported = if (hasStableIds) idea else idea.copy(backupId = java.util.UUID.randomUUID().toString())
+                    val id = ideaDao.insert(imported)
+                    stableIds.add(imported.backupId)
                     mappedTags.forEach { tagDao.linkTagToIdea(IdeaTagCrossRef(id, it)) }
                     added++
                 }

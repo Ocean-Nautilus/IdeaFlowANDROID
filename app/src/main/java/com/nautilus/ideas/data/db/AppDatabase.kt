@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.nautilus.ideas.data.dao.CategoryDao
@@ -13,10 +14,6 @@ import com.nautilus.ideas.data.model.Category
 import com.nautilus.ideas.data.model.Idea
 import com.nautilus.ideas.data.model.IdeaTagCrossRef
 import com.nautilus.ideas.data.model.Tag
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
 /**
  * База данных приложения.
@@ -31,7 +28,7 @@ import kotlinx.coroutines.launch
         Tag::class,
         IdeaTagCrossRef::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -42,6 +39,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tagDao(): TagDao
 
     companion object {
+
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE ideas ADD COLUMN backupId TEXT NOT NULL DEFAULT ''")
+                db.execSQL("UPDATE ideas SET backupId = lower(hex(randomblob(16)))")
+            }
+        }
 
         private const val DATABASE_NAME = "ideas.db"
 
@@ -65,26 +69,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
-                // На время учебной разработки структура таблиц ещё меняется.
-                // Вместо написания миграции на каждую правку база просто
-                // пересоздаётся. Перед сдачей это нужно заменить на миграции.
-                .fallbackToDestructiveMigration()
-                .addCallback(seedCallback(context))
+                .addMigrations(MIGRATION_1_2)
+                .addCallback(seedCallback())
                 .build()
 
         /**
          * При самом первом создании файла базы наполняет её примерами,
          * чтобы приложение не открывалось пустым.
          */
-        private fun seedCallback(context: Context) = object : RoomDatabase.Callback() {
+        private fun seedCallback() = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                // onCreate вызывается при первом обращении к базе, то есть
-                // уже после того, как build() вернул объект и instance
-                // присвоен — рекурсии здесь не будет.
-                CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-                    DatabaseSeeder.seed(getInstance(context))
-                }
+                DatabaseSeeder.seed(db)
             }
         }
     }

@@ -30,28 +30,6 @@ interface IdeaDao {
     fun observeAll(): Flow<List<IdeaWithDetails>>
 
     @Transaction
-    @Query(
-        """
-    SELECT * FROM ideas
-    WHERE (:query = '' OR title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%')
-      AND (:status IS NULL OR status = :status)
-      AND (:categoryId IS NULL OR categoryId = :categoryId)
-    ORDER BY
-      CASE WHEN :sort = 'DATE_ASC' THEN createdAt END ASC,
-      CASE WHEN :sort = 'TITLE_ASC' THEN title END ASC,
-      CASE WHEN :sort = 'RATING_DESC' THEN rating END DESC,
-      CASE WHEN :sort = 'DATE_DESC' THEN createdAt END DESC,
-      createdAt DESC
-    """
-    )
-    fun observeFiltered(
-        query: String,
-        status: String?,
-        categoryId: Long?,
-        sort: String
-    ): Flow<List<IdeaWithDetails>>
-
-    @Transaction
     @Query("SELECT * FROM ideas WHERE id = :ideaId")
     fun observeById(ideaId: Long): Flow<IdeaWithDetails?>
 

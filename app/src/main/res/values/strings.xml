@@ -135,4 +135,11 @@
     <string name="stats_completed">Завершено</string>
     <string name="settings_show_importance">Показывать важность</string>
     <string name="editor_tags">Теги через запятую (необязательно)</string>
+    <string name="draft_exit_title">Выйти без сохранения?</string>
+    <string name="draft_exit_message">В идее есть несохранённые изменения.</string>
+    <string name="draft_continue">Продолжить редактирование</string>
+    <string name="draft_discard">Удалить изменения</string>
+    <string name="error_category_required">Нет доступной категории. Создайте категорию в настройках и откройте редактор снова.</string>
+    <string name="backup_confirm_title">Импортировать идеи?</string>
+    <string name="backup_confirm_message">Новые идеи будут добавлены. Уже известные записи из новых резервных копий будут пропущены, ваши изменения сохранятся. У старых копий версии 1 изменённые записи могут добавиться повторно.</string>
 </resources>

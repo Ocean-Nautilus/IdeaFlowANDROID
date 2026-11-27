@@ -8,9 +8,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nautilus.ideas.IdeasApp
 import com.nautilus.ideas.data.model.IdeaWithDetails
 import com.nautilus.ideas.data.repository.IdeaRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -55,8 +56,8 @@ class IdeaDetailsViewModel(
             initialValue = DetailsUiState()
         )
 
-    private val _events = MutableSharedFlow<DetailsEvent>(extraBufferCapacity = 1)
-    val events: SharedFlow<DetailsEvent> = _events
+    private val _events = Channel<DetailsEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
 
     /**
      * Удаляет идею.
@@ -74,10 +75,12 @@ class IdeaDetailsViewModel(
                 // Связи с тегами уйдут сами: в связующей таблице
                 // внешний ключ объявлен с ON DELETE CASCADE.
                 repository.deleteIdea(idea)
-                _events.tryEmit(DetailsEvent.Deleted)
+                _events.trySend(DetailsEvent.Deleted)
+            } catch (error: CancellationException) {
+                throw error
             } catch (error: Exception) {
                 isDeleting.value = false
-                _events.tryEmit(DetailsEvent.DeleteFailed(error.message))
+                _events.trySend(DetailsEvent.DeleteFailed(error.message))
             }
         }
     }

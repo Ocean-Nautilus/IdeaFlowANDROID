@@ -52,7 +52,15 @@ class TagsUiTest {
             onView(allOf(withId(R.id.titleText), withText(title))).perform(click())
             onView(withText(shared)).check(matches(isDisplayed()))
             onView(withText(second)).check(matches(isDisplayed()))
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
             onView(withId(R.id.editButton)).perform(click())
+            val editDeadline = android.os.SystemClock.uptimeMillis() + 5_000
+            var editorReady = false
+            while (!editorReady && android.os.SystemClock.uptimeMillis() < editDeadline) {
+                scenario.onActivity { editorReady = it.findViewById<android.view.View>(R.id.voiceInputButton)?.isEnabled == true }
+                if (!editorReady) android.os.SystemClock.sleep(50)
+            }
+            assertTrue("Editor did not open", editorReady)
             onView(withId(R.id.tagsInput)).perform(scrollTo(), replaceText(""), closeSoftKeyboard())
             InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
             onView(withId(R.id.saveButton)).perform(click())

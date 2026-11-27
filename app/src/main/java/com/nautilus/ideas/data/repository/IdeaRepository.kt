@@ -14,6 +14,8 @@ import com.nautilus.ideas.data.model.IdeaWithDetails
 import com.nautilus.ideas.data.model.StatusCount
 import com.nautilus.ideas.data.model.Tag
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import com.nautilus.ideas.data.IdeaSearch
 import androidx.room.withTransaction
 
 /**
@@ -37,12 +39,7 @@ class IdeaRepository(
         status: IdeaStatus? = null,
         categoryId: Long? = null,
         sort: SortOption = SortOption.DATE_DESC
-    ): Flow<List<IdeaWithDetails>> = ideaDao.observeFiltered(
-        query = query,
-        status = status?.name,
-        categoryId = categoryId,
-        sort = sort.name
-    )
+    ): Flow<List<IdeaWithDetails>> = ideaDao.observeAll().map { IdeaSearch.filter(it, query, status, categoryId, sort) }
 
     fun observeCountByCategory(): Flow<List<CategoryCount>> = categoryDao.observeCountByCategory()
     fun observeIdea(ideaId: Long): Flow<IdeaWithDetails?> = ideaDao.observeById(ideaId)
@@ -75,6 +72,7 @@ class IdeaRepository(
             val original = requireNotNull(ideaDao.getById(idea.id)) { "Идея больше не существует" }.idea
             ideaDao.update(idea.copy(
                 createdAt = original.createdAt,
+                backupId = original.backupId,
                 isVoiceNote = original.isVoiceNote || idea.isVoiceNote,
                 updatedAt = System.currentTimeMillis()
             ))
@@ -82,16 +80,16 @@ class IdeaRepository(
         }
 
         tagDao.clearTagsOfIdea(ideaId)
+        val knownTags = tagDao.getAll().associate { it.name.lowercase() to it.id }.toMutableMap()
         tagNames
             .map { it.trim().lowercase() }
             .filter { it.isNotEmpty() }
             .distinct()
             .forEach { name ->
-                // insert с IGNORE возвращает -1, если тег уже существует,
-                // поэтому в таком случае берём его id отдельным запросом.
-                val newId = tagDao.insert(Tag(name = name))
-                val tagId = if (newId != -1L) newId else tagDao.findIdByName(name)
-                tagDao.linkTagToIdea(IdeaTagCrossRef(ideaId, requireNotNull(tagId)))
+                val tagId = knownTags.getOrPut(name) {
+                    tagDao.insert(Tag(name = name)).also { check(it > 0) { "Не удалось сохранить тег" } }
+                }
+                tagDao.linkTagToIdea(IdeaTagCrossRef(ideaId, tagId))
             }
 
         ideaId
@@ -102,7 +100,7 @@ class IdeaRepository(
     suspend fun saveCategory(category: Category): Long = database.withTransaction {
         val name = category.name.trim()
         require(name.isNotEmpty() && name.length <= 40) { "Название должно содержать от 1 до 40 символов" }
-        require(category.colorHex.matches(Regex("#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})"))) { "Некорректный цвет категории" }
+        require(category.colorHex.matches(Regex("#(?:[0-9a-fA-F]{6})"))) { "Некорректный цвет категории" }
         val categories = categoryDao.getAll()
         require(categories.none { it.id != category.id && it.name.equals(name, ignoreCase = true) }) {
             "Категория с таким названием уже есть"

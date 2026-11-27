@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -66,6 +67,7 @@ class StatsFragment : Fragment() {
         pieChart.setDrawEntryLabels(false)
         pieChart.legend.textColor = ContextCompat.getColor(requireContext(), R.color.text_secondary)
         pieChart.setHoleColor(Color.TRANSPARENT)
+        pieChart.legend.isWordWrapEnabled = true
         pieChart.legend.orientation = Legend.LegendOrientation.HORIZONTAL
 
         barChart.description.isEnabled = false
@@ -98,7 +100,7 @@ class StatsFragment : Fragment() {
         completedStat.statValue.text = state.statusCount(IdeaStatus.DONE).toString()
 
         renderPie(state.categoryCounts)
-        renderBar(state.statusCounts)
+        renderBar(state.statusCounts.sortedBy { it.status.ordinal })
     }
 
     private fun renderPie(counts: List<CategoryCount>) = with(binding.pieChart) {
@@ -108,7 +110,7 @@ class StatsFragment : Fragment() {
 
         val dataSet = PieDataSet(entries, "").apply {
             this.colors = colors
-            valueTextColor = Color.BLACK
+            setValueTextColors(colors.map { if (ColorUtils.calculateLuminance(it) < 0.45) Color.WHITE else Color.BLACK })
             valueTextSize = 12f
             sliceSpace = 2f
             valueFormatter = object : ValueFormatter() {

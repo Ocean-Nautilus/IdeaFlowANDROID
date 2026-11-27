@@ -17,6 +17,7 @@ import com.nautilus.ideas.R
 import com.nautilus.ideas.data.AppSettings
 import com.nautilus.ideas.viewmodels.SettingsViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 import com.nautilus.ideas.databinding.FragmentSettingsBinding
@@ -65,7 +66,14 @@ class SettingsFragment : Fragment() {
         binding.exportButton.setOnClickListener {
             exportFile.launch("IdeaFlow-${LocalDate.now()}.json")
         }
-        binding.importButton.setOnClickListener { importFile.launch(arrayOf("*/*")) }
+        binding.importButton.setOnClickListener {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.backup_confirm_title)
+                .setMessage(R.string.backup_confirm_message)
+                .setNegativeButton(R.string.action_cancel, null)
+                .setPositiveButton(R.string.backup_import) { _, _ -> importFile.launch(arrayOf("*/*")) }
+                .show()
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.transfer.collect { state ->

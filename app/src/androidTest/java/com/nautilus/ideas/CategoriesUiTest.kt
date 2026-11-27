@@ -65,10 +65,20 @@ class CategoriesUiTest {
             onView(withId(R.id.saveCategoryButton)).perform(scrollTo(), click())
             withTimeout(5_000) { repository.observeCategories().first { rows -> rows.any { it.name == renamed } } }
             onView(withText(renamed)).perform(scrollTo(), click())
-            onView(withId(R.id.deleteCategoryButton)).perform(scrollTo(), click())
+            // Открытие формы сбрасывает прокрутку: нажимаем после завершения layout.
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
+            onView(withId(R.id.deleteCategoryButton)).perform(scrollTo())
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
+            onView(withId(R.id.deleteCategoryButton)).perform(click())
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
             onView(withId(android.R.id.button2)).perform(click())
             assertEquals(1, repository.observeCategories().first().count { it.name == renamed })
-            onView(withId(R.id.deleteCategoryButton)).perform(scrollTo(), click())
+            // Открытие формы сбрасывает прокрутку: нажимаем после завершения layout.
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
+            onView(withId(R.id.deleteCategoryButton)).perform(scrollTo())
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
+            onView(withId(R.id.deleteCategoryButton)).perform(click())
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500, 5_000)
             onView(withId(android.R.id.button1)).perform(click())
             withTimeout(5_000) { repository.observeCategories().first { rows -> rows.none { it.name == renamed } } }
         } finally {
